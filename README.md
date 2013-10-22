@@ -66,3 +66,35 @@ which should print:
 ```
 10.0 + 32.0 == 42.0
 ```
+
+## No Maven?
+
+If you're unfamiliar with Maven, and are reluctant to install it, here's how
+to perform all the steps from the (*nix) command line (assuming you're in the
+root folder of the project `tiny-language-antlr4`):
+
+Download ANTLR 4:
+
+```bash
+wget http://www.antlr.org/download/antlr-4.1-complete.jar
+```
+
+Generate the lexer, parser and visitor classes and move them to the other 
+`.java` project sources:
+
+```bash
+java -cp antlr-4.1-complete.jar org.antlr.v4.Tool src/main/antlr4/tl/antlr4/TL.g4 -package tl.antlr4 -visitor
+mv src/main/antlr4/tl/antlr4/*.java src/main/java/tl/antlr4
+```
+
+Compile all `.java` source files:
+
+```bash
+javac -cp antlr-4.1-complete.jar src/main/java/tl/antlr4/*.java
+```
+
+Run the `Main` class:
+
+```bash
+java -cp src/main/java:antlr-4.1-complete.jar tl.antlr4.Main
+```
