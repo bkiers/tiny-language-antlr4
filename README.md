@@ -10,8 +10,9 @@ Most notably, ANTLR 4 does not have any tree rewriting anymore. The new version 
 (and/or visitors) that can be used to *walk* the plain parse tree.
 
 This Github project provides a start on how to get Tiny Language working with ANTLR 4. Not all
-functionality is implemented in the class `EvalVisitor`, but by looking at what *is* implemented
-one can try the missing functionality.
+functionality is implemented in the class 
+[`EvalVisitor`](https://github.com/bkiers/tiny-language-antlr4/blob/master/src/main/java/tl/antlr4/EvalVisitor.java)
+, but by looking at what *is* implemented one can try the missing functionality.
 
 ## Get up and running
 
