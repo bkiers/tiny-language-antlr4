@@ -83,7 +83,11 @@ Generate the lexer, parser and visitor classes and move them to the other
 `.java` project sources:
 
 ```bash
-java -cp antlr-4.1-complete.jar org.antlr.v4.Tool src/main/antlr4/tl/antlr4/TL.g4 -package tl.antlr4 -visitor
+java -cp antlr-4.1-complete.jar \
+  org.antlr.v4.Tool src/main/antlr4/tl/antlr4/TL.g4 \
+  -package tl.antlr4 \
+  -visitor
+  
 mv src/main/antlr4/tl/antlr4/*.java src/main/java/tl/antlr4
 ```
 
