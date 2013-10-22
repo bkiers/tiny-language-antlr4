@@ -19,12 +19,12 @@ First, clone this repository:
 
 ```bash
 git clone https://github.com/bkiers/tiny-language-antlr4.git
+cd tiny-language-antlr4
 ```
 
 Then generate the lexer, parser and visitor classes using the antlr4 Maven plugin:
 
 ```bash
-cd tiny-language-antlr4
 mvn antlr4:antlr4
 ```
 
