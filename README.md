@@ -31,7 +31,6 @@ mvn antlr4:antlr4
 Compile all classes:
 
 ```bash
-cd tiny-language-antlr4
 mvn install
 ```
 
