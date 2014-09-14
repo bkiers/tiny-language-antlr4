@@ -2,28 +2,92 @@ package tl.antlr4;
 
 import org.antlr.v4.runtime.misc.NotNull;
 
+import tl.antlr4.TLParser.AndExpressionContext;
+import tl.antlr4.TLParser.AssertFunctionCallContext;
+import tl.antlr4.TLParser.DivideExpressionContext;
+import tl.antlr4.TLParser.GtEqExpressionContext;
+import tl.antlr4.TLParser.GtExpressionContext;
+import tl.antlr4.TLParser.InExpressionContext;
+import tl.antlr4.TLParser.LtEqExpressionContext;
+import tl.antlr4.TLParser.LtExpressionContext;
+import tl.antlr4.TLParser.ModulusExpressionContext;
+import tl.antlr4.TLParser.MultiplyExpressionContext;
+import tl.antlr4.TLParser.NotExpressionContext;
+import tl.antlr4.TLParser.OrExpressionContext;
+import tl.antlr4.TLParser.PowerExpressionContext;
+import tl.antlr4.TLParser.SizeFunctionCallContext;
+import tl.antlr4.TLParser.SubtractExpressionContext;
+import tl.antlr4.TLParser.TernaryExpressionContext;
+import tl.antlr4.TLParser.UnaryMinusExpressionContext;
+
 public class EvalVisitor extends TLBaseVisitor<TLValue> {
 
     private Scope scope = new Scope();
 
     // '-' expression                           #unaryMinusExpression
-    // TODO
+    @Override
+    public TLValue visitUnaryMinusExpression(UnaryMinusExpressionContext ctx) {
+    	TLValue v = this.visit(ctx.expression());
+    	if (!v.isNumber()) {
+            throw new RuntimeException("Illegal expression: -" + v);
+        }
+    	return new TLValue(-1 * v.asDouble());
+    }
 
     // '!' expression                           #notExpression
-    // TODO
+    @Override
+    public TLValue visitNotExpression(NotExpressionContext ctx) {
+    	TLValue v = this.visit(ctx.expression());
+    	if(!v.isBoolean()) {
+            throw new RuntimeException("Illegal expression: !" + v);
+        }
+    	return new TLValue(!v.asBoolean());
+    }
 
     // expression '^' expression                #powerExpression
-    // TODO
+    @Override
+    public TLValue visitPowerExpression(PowerExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(Math.pow(lhs.asDouble(), rhs.asDouble()));
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + "^" + rhs);
+    }
 
     // expression '*' expression                #multiplyExpression
-    // TODO
+    @Override
+    public TLValue visitMultiplyExpression(MultiplyExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(lhs.asDouble() * rhs.asDouble());
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + "*" + rhs);
+    }
 
     // expression '/' expression                #divideExpression
-    // TODO
+    @Override
+    public TLValue visitDivideExpression(DivideExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(lhs.asDouble() / rhs.asDouble());
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + "/" + rhs);
+    }
 
     // expression '%' expression                #modulusExpression
-    // TODO
-
+	@Override
+	public TLValue visitModulusExpression(ModulusExpressionContext ctx) {
+		TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(lhs.asDouble() % rhs.asDouble());
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + "%" + rhs);
+	}
+	
     // expression '+' expression                #addExpression
     @Override
     public TLValue visitAddExpression(@NotNull TLParser.AddExpressionContext ctx) {
@@ -38,19 +102,59 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     }
 
     // expression '-' expression                #subtractExpression
-    // TODO
+    @Override
+    public TLValue visitSubtractExpression(SubtractExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(lhs.asDouble() - rhs.asDouble());
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + "-" + rhs);
+    }
 
     // expression '>=' expression               #gtEqExpression
-    // TODO
+    @Override
+    public TLValue visitGtEqExpression(GtEqExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(lhs.asDouble() >= rhs.asDouble());
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + ">=" + rhs);
+    }
 
     // expression '<=' expression               #ltEqExpression
-    // TODO
+    @Override
+    public TLValue visitLtEqExpression(LtEqExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(lhs.asDouble() <= rhs.asDouble());
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + "<=" + rhs);
+    }
 
     // expression '>' expression                #gtExpression
-    // TODO
+    @Override
+    public TLValue visitGtExpression(GtExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(lhs.asDouble() > rhs.asDouble());
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + ">" + rhs);
+    }
 
     // expression '<' expression                #ltExpression
-    // TODO
+    @Override
+    public TLValue visitLtExpression(LtExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	if (lhs.isNumber() && rhs.isNumber()) {
+    		return new TLValue(lhs.asDouble() < rhs.asDouble());
+    	}
+    	throw new RuntimeException("Illegal expression: " + lhs + "<" + rhs);
+    }
 
     // expression '==' expression               #eqExpression
     @Override
@@ -69,17 +173,57 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     }
 
     // expression '&&' expression               #andExpression
-    // TODO
+    @Override
+    public TLValue visitAndExpression(AndExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	
+    	if(!lhs.isBoolean() || !rhs.isBoolean()) {
+            throw new RuntimeException("Illegal expression: " + lhs + "&&" +rhs);
+        }
+		return new TLValue(lhs.asBoolean() && rhs.asBoolean());
+    }
 
     // expression '||' expression               #orExpression
-    // TODO
+    @Override
+    public TLValue visitOrExpression(OrExpressionContext ctx) {
+    	TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	
+    	if(!lhs.isBoolean() || !rhs.isBoolean()) {
+            throw new RuntimeException("Illegal expression: " + lhs + "||" +rhs);
+        }
+		return new TLValue(lhs.asBoolean() || rhs.asBoolean());
+    }
 
     // expression '?' expression ':' expression #ternaryExpression
-    // TODO
+    @Override
+    public TLValue visitTernaryExpression(TernaryExpressionContext ctx) {
+    	TLValue condition = this.visit(ctx.expression(0));
+    	if (condition.asBoolean()) {
+    		return new TLValue(this.visit(ctx.expression(1)));
+    	} else {
+    		return new TLValue(this.visit(ctx.expression(2)));
+    	}
+    }
 
     // expression In expression                 #inExpression
-    // TODO
-
+	@Override
+	public TLValue visitInExpression(InExpressionContext ctx) {
+		TLValue lhs = this.visit(ctx.expression(0));
+    	TLValue rhs = this.visit(ctx.expression(1));
+    	
+    	if (rhs.isList()) {
+    		for(TLValue val: rhs.asList()) {
+    			if (val.equals(lhs)) {
+    				return new TLValue(true);
+    			}
+    		}
+    		return new TLValue(false);
+    	}
+    	throw new RuntimeException("Illegal expression: "+lhs+ " in "+rhs);
+	}
+	
     // Number                                   #numberExpression
     @Override
     public TLValue visitNumberExpression(@NotNull TLParser.NumberExpressionContext ctx) {
@@ -154,10 +298,36 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     }
 
     // Assert '(' expression ')'    #assertFunctionCall
-    // TODO
+    @Override
+    public TLValue visitAssertFunctionCall(AssertFunctionCallContext ctx) {
+    	TLValue value = this.visit(ctx.expression());
+
+        if(!value.isBoolean()) {
+            throw new RuntimeException("assert(...) only takes boolean expressions");
+        }
+
+        if(!value.asBoolean()) {
+            throw new AssertionError(ctx.expression().toString());
+        }
+
+        return TLValue.VOID;
+    }
 
     // Size '(' expression ')'      #sizeFunctionCall
-    // TODO
+    @Override
+    public TLValue visitSizeFunctionCall(SizeFunctionCallContext ctx) {
+    	TLValue value = this.visit(ctx.expression());
+
+        if(value.isString()) {
+            return new TLValue(value.asString().length());
+        }
+
+        if(value.isList()) {
+            return new TLValue(value.asList().size());
+        }
+
+        throw new RuntimeException("Illegal function call: size("+ value +")");
+    }
 
     // ifStatement
     //  : ifStat elseIfStat* elseStat? End

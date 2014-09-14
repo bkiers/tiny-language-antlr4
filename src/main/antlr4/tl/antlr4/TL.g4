@@ -5,15 +5,16 @@ parse
  ;
 
 block
- : (statement | functionDecl)* (Return expression ';')?
+ : (statement | functionDecl)* (Return expression Newline)?
  ;
 
 statement
- : assignment ';'
- | functionCall ';'
+ : assignment Newline
+ | functionCall Newline
  | ifStatement
  | forStatement
  | whileStatement
+ | Newline
  ;
 
 assignment
@@ -29,31 +30,31 @@ functionCall
  ;
 
 ifStatement
- : ifStat elseIfStat* elseStat? End
+ : ifStat elseIfStat* elseStat?
  ;
 
 ifStat
- : If expression Do block
+ : If expression OBrace block CBrace
  ;
 
 elseIfStat
- : Else If expression Do block
+ : Else If expression OBrace block CBrace
  ;
 
 elseStat
- : Else Do block
+ : Else OBrace block CBrace
  ;
 
 functionDecl
- : Def Identifier '(' idList? ')' block End
+ : Def Identifier '(' idList? ')' OBrace block CBrace
  ;
 
 forStatement
- : For Identifier '=' expression To expression Do block End
+ : For Identifier '=' expression To expression OBrace block CBrace
  ;
 
 whileStatement
- : While expression Do block End
+ : While expression OBrace block CBrace
  ;
 
 idList
@@ -114,8 +115,6 @@ Return   : 'return';
 For      : 'for';
 While    : 'while';
 To       : 'to';
-Do       : 'do';
-End      : 'end';
 In       : 'in';
 Null     : 'null';
 
@@ -145,6 +144,7 @@ Assign   : '=';
 Comma    : ',';
 QMark    : '?';
 Colon    : ':';
+Newline  : '\r'? '\n';
 
 Bool
  : 'true' 
@@ -180,3 +180,5 @@ fragment Int
 fragment Digit 
  : [0-9]
  ;
+ 
+ 
