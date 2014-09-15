@@ -92,10 +92,9 @@ def squaredAndTwice(n) {
 def list() {
   return [7,8,9]
 }
-println(squared(10))
+
 assert(squared(666) == 666^2)
 assert(twice(squared(5)) == 50)
-println(squaredAndTwice(10))
 assert(squaredAndTwice(10) == 200)
 assert(squared(squared(squared(2))) == 2^2^2^2)
 assert(list() == [7,8,9])

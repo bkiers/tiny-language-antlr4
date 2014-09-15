@@ -74,4 +74,13 @@ public class Scope {
             return null;
         }
     }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	for(Map.Entry<String,TLValue> var: variables.entrySet()) {
+    		sb.append(var.getKey()+"->"+var.getValue()+",");
+    	}
+    	return sb.toString();
+    }
 }

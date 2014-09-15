@@ -21,7 +21,7 @@ public class SymbolVisitor extends TLBaseVisitor<TLValue> {
         List<TerminalNode> params = ctx.idList() != null ? ctx.idList().Identifier() : new ArrayList<TerminalNode>(); 
         ParseTree block = ctx.block();
         String id = ctx.Identifier().getText() + params.size();
-        functions.put(id, new Function(params, block));
+        functions.put(id, new Function(id, params, block));
         return TLValue.VOID;
     }
 }

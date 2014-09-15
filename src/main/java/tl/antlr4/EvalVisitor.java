@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
 
 import tl.antlr4.TLParser.AndExpressionContext;
@@ -13,12 +14,14 @@ import tl.antlr4.TLParser.DivideExpressionContext;
 import tl.antlr4.TLParser.ExpressionContext;
 import tl.antlr4.TLParser.ExpressionExpressionContext;
 import tl.antlr4.TLParser.ForStatementContext;
+import tl.antlr4.TLParser.FunctionCallExpressionContext;
 import tl.antlr4.TLParser.FunctionDeclContext;
 import tl.antlr4.TLParser.GtEqExpressionContext;
 import tl.antlr4.TLParser.GtExpressionContext;
 import tl.antlr4.TLParser.IdentifierFunctionCallContext;
 import tl.antlr4.TLParser.InExpressionContext;
 import tl.antlr4.TLParser.ListContext;
+import tl.antlr4.TLParser.ListExpressionContext;
 import tl.antlr4.TLParser.LtEqExpressionContext;
 import tl.antlr4.TLParser.LtExpressionContext;
 import tl.antlr4.TLParser.ModulusExpressionContext;
@@ -34,6 +37,7 @@ import tl.antlr4.TLParser.UnaryMinusExpressionContext;
 import tl.antlr4.TLParser.WhileStatementContext;
 
 public class EvalVisitor extends TLBaseVisitor<TLValue> {
+	private static ReturnValue returnValue = new ReturnValue();
     private Scope scope;
     private Map<String, Function> functions;
     
@@ -52,8 +56,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     @Override
     public TLValue visitList(ListContext ctx) {
         List<TLValue> list = new ArrayList<TLValue>();
-        for(ExpressionContext ex: ctx.exprList().expression()) {
-            list.add(this.visit(ex));
+        if (ctx.exprList() != null) {
+	        for(ExpressionContext ex: ctx.exprList().expression()) {
+	            list.add(this.visit(ex));
+	        }
         }
         return new TLValue(list);
     }
@@ -96,6 +102,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
     	if(lhs == null || rhs == null) {
+    		System.err.println("lhs "+ lhs+ " rhs "+rhs);
     	    throw new EvalException(ctx);
     	}
     	
@@ -260,6 +267,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     public TLValue visitEqExpression(@NotNull TLParser.EqExpressionContext ctx) {
         TLValue lhs = this.visit(ctx.expression(0));
         TLValue rhs = this.visit(ctx.expression(1));
+        if (lhs == null) {
+        	throw new EvalException(ctx);
+        }
         return new TLValue(lhs.equals(rhs));
     }
 
@@ -341,44 +351,118 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         return TLValue.NULL;
     }
 
+    private TLValue resolveIndexes(ParserRuleContext ctx, TLValue val, List<ExpressionContext> indexes) {
+    	for (ExpressionContext ec: indexes) {
+    		TLValue idx = this.visit(ec);
+    		if (!idx.isNumber() || (!val.isList() && !val.isString()) ) {
+        		throw new EvalException("Problem resolving indexes on "+val+" at "+idx, ec);
+    		}
+    		int i = idx.asDouble().intValue();
+    		if (val.isString()) {
+    			val = new TLValue(val.asString().substring(i, i+1));
+    		} else {
+    			val = val.asList().get(i);
+    		}
+    	}
+    	return val;
+    }
+    
+    private void setAtIndex(ParserRuleContext ctx, List<ExpressionContext> indexes, TLValue val, TLValue newVal) {
+    	if (!val.isList()) {
+    		throw new EvalException(ctx);
+    	}
+    	// TODO some more list size checking in here
+    	for (int i = 0; i < indexes.size() - 1; i++) {
+    		TLValue idx = this.visit(indexes.get(i));
+    		if (!idx.isNumber()) {
+        		throw new EvalException(ctx);
+    		}
+    		val = val.asList().get(idx.asDouble().intValue());
+    	}
+    	TLValue idx = this.visit(indexes.get(indexes.size() - 1));
+		if (!idx.isNumber()) {
+    		throw new EvalException(ctx);
+		}
+    	val.asList().set(idx.asDouble().intValue(), newVal);
+    }
+    
     // functionCall indexes?                    #functionCallExpression
-    // TODO
+    @Override
+    public TLValue visitFunctionCallExpression(FunctionCallExpressionContext ctx) {
+    	TLValue val = this.visit(ctx.functionCall());
+    	if (ctx.indexes() != null) {
+        	List<ExpressionContext> exps = ctx.indexes().expression();
+        	val = resolveIndexes(ctx, val, exps);
+        }
+    	return val;
+    }
 
     // list indexes?                            #listExpression
-    // TODO
+    @Override
+    public TLValue visitListExpression(ListExpressionContext ctx) {
+    	TLValue val = this.visit(ctx.list());
+    	if (ctx.indexes() != null) {
+        	List<ExpressionContext> exps = ctx.indexes().expression();
+        	val = resolveIndexes(ctx, val, exps);
+        }
+    	return val;
+    }
 
     // Identifier indexes?                      #identifierExpression
     @Override
     public TLValue visitIdentifierExpression(@NotNull TLParser.IdentifierExpressionContext ctx) {
         String id = ctx.Identifier().getText();
-        // TODO account for optional `indexes` production
-        return scope.resolve(id);
+        TLValue val = scope.resolve(id);
+        
+        if (ctx.indexes() != null) {
+        	List<ExpressionContext> exps = ctx.indexes().expression();
+        	val = resolveIndexes(ctx, val, exps);
+        }
+        return val;
     }
 
     // String indexes?                          #stringExpression
     @Override
     public TLValue visitStringExpression(@NotNull TLParser.StringExpressionContext ctx) {
         String text = ctx.getText();
-        String stripped = text.substring(1, text.length() - 1).replaceAll("\\\\(.)", "$1");
-        // TODO account for optional `indexes` production
-        return new TLValue(stripped);
+        text = text.substring(1, text.length() - 1).replaceAll("\\\\(.)", "$1");
+        TLValue val = new TLValue(text);
+        if (ctx.indexes() != null) {
+        	List<ExpressionContext> exps = ctx.indexes().expression();
+        	val = resolveIndexes(ctx, val, exps);
+        }
+        return val;
     }
 
     // '(' expression ')' indexes?              #expressionExpression
     @Override
     public TLValue visitExpressionExpression(ExpressionExpressionContext ctx) {
-        return this.visit(ctx.expression());
+        TLValue val = this.visit(ctx.expression());
+        if (ctx.indexes() != null) {
+        	List<ExpressionContext> exps = ctx.indexes().expression();
+        	val = resolveIndexes(ctx, val, exps);
+        }
+        return val;
     }
 
     // Input '(' String? ')'                    #inputExpression
     // TODO
 
+    
+    // assignment
+    // : Identifier indexes? '=' expression
+    // ;
     @Override
     public TLValue visitAssignment(@NotNull TLParser.AssignmentContext ctx) {
-        String id = ctx.Identifier().getText();
-        // TODO account for optional `indexes` production
-        TLValue value = this.visit(ctx.expression());
-        scope.assign(id, value);
+        TLValue newVal = this.visit(ctx.expression());
+        if (ctx.indexes() != null) {
+        	TLValue val = scope.resolve(ctx.Identifier().getText());
+        	List<ExpressionContext> exps = ctx.indexes().expression();
+        	setAtIndex(ctx, exps, val, newVal);
+        } else {
+        	String id = ctx.Identifier().getText();        	
+        	scope.assign(id, newVal);
+        }
         return TLValue.VOID;
     }
 
@@ -389,7 +473,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         String id = ctx.Identifier().getText() + params.size();
         Function function;      
         if ((function = functions.get(id)) != null) {
-            return new Function(function).invoke(params, functions);
+            return function.invoke(params, functions, scope.copy());
         }
         throw new EvalException(ctx);
     }
@@ -488,7 +572,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         }
         ExpressionContext ex;
         if ((ex = ctx.expression()) != null) {
-            return this.visit(ex);
+            //return this.visit(ex);
+        	returnValue.value = this.visit(ex);
+        	throw returnValue;
         }
         return TLValue.VOID;
     }

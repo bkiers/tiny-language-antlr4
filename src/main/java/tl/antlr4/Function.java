@@ -9,23 +9,17 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import tl.antlr4.TLParser.ExpressionContext;
 
 public class Function {
+	private String id;
     private List<TerminalNode> params;
     private ParseTree block;
-    private Scope scope;
 
-    public Function(List<TerminalNode> params, ParseTree block) {
+    public Function(String id, List<TerminalNode> params, ParseTree block) {
+    	this.id = id;
         this.params = params;
         this.block = block;
-        scope = new Scope();
     }
     
-    public Function(Function f) {
-        this.params = f.params;
-        this.block = f.block;
-        this.scope = f.scope.copy();
-    }
-    
-    public TLValue invoke(List<ExpressionContext> params, Map<String, Function> functions) {
+    public TLValue invoke(List<ExpressionContext> params, Map<String, Function> functions, Scope scope) {
         if (params.size() != this.params.size()) {
             throw new RuntimeException("Illegal Function call");
         }
@@ -34,6 +28,12 @@ public class Function {
             TLValue value = evalVisitor.visit(params.get(i));
             scope.assign(this.params.get(i).getText(), value);
         }
-        return evalVisitor.visit(this.block);
+        TLValue ret = TLValue.VOID;
+        try {
+        	evalVisitor.visit(this.block);
+        } catch (ReturnValue returnValue) {
+        	ret = returnValue.value;
+        }
+        return ret;
     }
 }
