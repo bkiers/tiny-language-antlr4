@@ -1,13 +1,24 @@
 package tl.antlr4;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.antlr.v4.runtime.misc.NotNull;
 
 import tl.antlr4.TLParser.AndExpressionContext;
 import tl.antlr4.TLParser.AssertFunctionCallContext;
+import tl.antlr4.TLParser.BlockContext;
 import tl.antlr4.TLParser.DivideExpressionContext;
+import tl.antlr4.TLParser.ExpressionContext;
+import tl.antlr4.TLParser.ExpressionExpressionContext;
+import tl.antlr4.TLParser.ForStatementContext;
+import tl.antlr4.TLParser.FunctionDeclContext;
 import tl.antlr4.TLParser.GtEqExpressionContext;
 import tl.antlr4.TLParser.GtExpressionContext;
+import tl.antlr4.TLParser.IdentifierFunctionCallContext;
 import tl.antlr4.TLParser.InExpressionContext;
+import tl.antlr4.TLParser.ListContext;
 import tl.antlr4.TLParser.LtEqExpressionContext;
 import tl.antlr4.TLParser.LtExpressionContext;
 import tl.antlr4.TLParser.ModulusExpressionContext;
@@ -16,20 +27,44 @@ import tl.antlr4.TLParser.NotExpressionContext;
 import tl.antlr4.TLParser.OrExpressionContext;
 import tl.antlr4.TLParser.PowerExpressionContext;
 import tl.antlr4.TLParser.SizeFunctionCallContext;
+import tl.antlr4.TLParser.StatementContext;
 import tl.antlr4.TLParser.SubtractExpressionContext;
 import tl.antlr4.TLParser.TernaryExpressionContext;
 import tl.antlr4.TLParser.UnaryMinusExpressionContext;
+import tl.antlr4.TLParser.WhileStatementContext;
 
 public class EvalVisitor extends TLBaseVisitor<TLValue> {
+    private Scope scope;
+    private Map<String, Function> functions;
+    
+    public EvalVisitor(Scope scope, Map<String, Function> functions) {
+        this.scope = scope;
+        this.functions = functions;
+    }
 
-    private Scope scope = new Scope();
-
+    // functionDecl
+    @Override
+    public TLValue visitFunctionDecl(FunctionDeclContext ctx) {
+        return TLValue.VOID;
+    }
+    
+    // list: '[' exprList? ']'
+    @Override
+    public TLValue visitList(ListContext ctx) {
+        List<TLValue> list = new ArrayList<TLValue>();
+        for(ExpressionContext ex: ctx.exprList().expression()) {
+            list.add(this.visit(ex));
+        }
+        return new TLValue(list);
+    }
+    
+    
     // '-' expression                           #unaryMinusExpression
     @Override
     public TLValue visitUnaryMinusExpression(UnaryMinusExpressionContext ctx) {
     	TLValue v = this.visit(ctx.expression());
     	if (!v.isNumber()) {
-            throw new RuntimeException("Illegal expression: -" + v);
+    	    throw new EvalException(ctx);
         }
     	return new TLValue(-1 * v.asDouble());
     }
@@ -39,7 +74,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     public TLValue visitNotExpression(NotExpressionContext ctx) {
     	TLValue v = this.visit(ctx.expression());
     	if(!v.isBoolean()) {
-            throw new RuntimeException("Illegal expression: !" + v);
+    	    throw new EvalException(ctx);
         }
     	return new TLValue(!v.asBoolean());
     }
@@ -52,7 +87,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(Math.pow(lhs.asDouble(), rhs.asDouble()));
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + "^" + rhs);
+    	throw new EvalException(ctx);
     }
 
     // expression '*' expression                #multiplyExpression
@@ -60,10 +95,35 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     public TLValue visitMultiplyExpression(MultiplyExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
-    	if (lhs.isNumber() && rhs.isNumber()) {
-    		return new TLValue(lhs.asDouble() * rhs.asDouble());
+    	if(lhs == null || rhs == null) {
+    	    throw new EvalException(ctx);
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + "*" + rhs);
+    	
+    	// number * number
+        if(lhs.isNumber() && rhs.isNumber()) {
+            return new TLValue(lhs.asDouble() * rhs.asDouble());
+        }
+
+        // string * number
+        if(lhs.isString() && rhs.isNumber()) {
+            StringBuilder str = new StringBuilder();
+            int stop = rhs.asDouble().intValue();
+            for(int i = 0; i < stop; i++) {
+                str.append(lhs.asString());
+            }
+            return new TLValue(str.toString());
+        }
+
+        // list * number
+        if(lhs.isList() && rhs.isNumber()) {
+            List<TLValue> total = new ArrayList<TLValue>();
+            int stop = rhs.asDouble().intValue();
+            for(int i = 0; i < stop; i++) {
+                total.addAll(lhs.asList());
+            }
+            return new TLValue(total);
+        }    	
+    	throw new EvalException(ctx);
     }
 
     // expression '/' expression                #divideExpression
@@ -74,7 +134,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() / rhs.asDouble());
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + "/" + rhs);
+    	throw new EvalException(ctx);
     }
 
     // expression '%' expression                #modulusExpression
@@ -85,7 +145,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() % rhs.asDouble());
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + "%" + rhs);
+    	throw new EvalException(ctx);
 	}
 	
     // expression '+' expression                #addExpression
@@ -93,11 +153,33 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     public TLValue visitAddExpression(@NotNull TLParser.AddExpressionContext ctx) {
         TLValue lhs = this.visit(ctx.expression(0));
         TLValue rhs = this.visit(ctx.expression(1));
-
+        
+        if(lhs == null || rhs == null) {
+            throw new EvalException(ctx);
+        }
+        
+        // number + number
         if(lhs.isNumber() && rhs.isNumber()) {
             return new TLValue(lhs.asDouble() + rhs.asDouble());
         }
+        
+        // list + any
+        if(lhs.isList()) {
+            List<TLValue> list = lhs.asList();
+            list.add(rhs);
+            return new TLValue(list);
+        }
 
+        // string + any
+        if(lhs.isString()) {
+            return new TLValue(lhs.asString() + "" + rhs.toString());
+        }
+
+        // any + string
+        if(rhs.isString()) {
+            return new TLValue(lhs.toString() + "" + rhs.asString());
+        }
+        
         return new TLValue(lhs.toString() + rhs.toString());
     }
 
@@ -109,7 +191,12 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() - rhs.asDouble());
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + "-" + rhs);
+    	if (lhs.isList()) {
+            List<TLValue> list = lhs.asList();
+            list.remove(rhs);
+            return new TLValue(list);
+        }
+    	throw new EvalException(ctx);
     }
 
     // expression '>=' expression               #gtEqExpression
@@ -120,7 +207,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() >= rhs.asDouble());
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + ">=" + rhs);
+    	if(lhs.isString() && rhs.isString()) {
+            return new TLValue(lhs.asString().compareTo(rhs.asString()) >= 0);
+        }
+    	throw new EvalException(ctx);
     }
 
     // expression '<=' expression               #ltEqExpression
@@ -131,7 +221,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() <= rhs.asDouble());
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + "<=" + rhs);
+    	if(lhs.isString() && rhs.isString()) {
+            return new TLValue(lhs.asString().compareTo(rhs.asString()) <= 0);
+        }
+    	throw new EvalException(ctx);
     }
 
     // expression '>' expression                #gtExpression
@@ -142,7 +235,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() > rhs.asDouble());
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + ">" + rhs);
+    	if(lhs.isString() && rhs.isString()) {
+            return new TLValue(lhs.asString().compareTo(rhs.asString()) > 0);
+        }
+    	throw new EvalException(ctx);
     }
 
     // expression '<' expression                #ltExpression
@@ -153,7 +249,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() < rhs.asDouble());
     	}
-    	throw new RuntimeException("Illegal expression: " + lhs + "<" + rhs);
+    	if(lhs.isString() && rhs.isString()) {
+            return new TLValue(lhs.asString().compareTo(rhs.asString()) < 0);
+        }
+    	throw new EvalException(ctx);
     }
 
     // expression '==' expression               #eqExpression
@@ -179,7 +278,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	TLValue rhs = this.visit(ctx.expression(1));
     	
     	if(!lhs.isBoolean() || !rhs.isBoolean()) {
-            throw new RuntimeException("Illegal expression: " + lhs + "&&" +rhs);
+    	    throw new EvalException(ctx);
         }
 		return new TLValue(lhs.asBoolean() && rhs.asBoolean());
     }
@@ -191,7 +290,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	TLValue rhs = this.visit(ctx.expression(1));
     	
     	if(!lhs.isBoolean() || !rhs.isBoolean()) {
-            throw new RuntimeException("Illegal expression: " + lhs + "||" +rhs);
+    	    throw new EvalException(ctx);
         }
 		return new TLValue(lhs.asBoolean() || rhs.asBoolean());
     }
@@ -221,7 +320,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     		}
     		return new TLValue(false);
     	}
-    	throw new RuntimeException("Illegal expression: "+lhs+ " in "+rhs);
+    	throw new EvalException(ctx);
 	}
 	
     // Number                                   #numberExpression
@@ -266,7 +365,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     }
 
     // '(' expression ')' indexes?              #expressionExpression
-    // TODO
+    @Override
+    public TLValue visitExpressionExpression(ExpressionExpressionContext ctx) {
+        return this.visit(ctx.expression());
+    }
 
     // Input '(' String? ')'                    #inputExpression
     // TODO
@@ -281,7 +383,16 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     }
 
     // Identifier '(' exprList? ')' #identifierFunctionCall
-    // TODO
+    @Override
+    public TLValue visitIdentifierFunctionCall(IdentifierFunctionCallContext ctx) {
+        List<ExpressionContext> params = ctx.exprList() != null ? ctx.exprList().expression() : new ArrayList<ExpressionContext>();
+        String id = ctx.Identifier().getText() + params.size();
+        Function function;      
+        if ((function = functions.get(id)) != null) {
+            return new Function(function).invoke(params, functions);
+        }
+        throw new EvalException(ctx);
+    }
 
     // Println '(' expression? ')'  #printlnFunctionCall
     @Override
@@ -303,11 +414,11 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	TLValue value = this.visit(ctx.expression());
 
         if(!value.isBoolean()) {
-            throw new RuntimeException("assert(...) only takes boolean expressions");
+            throw new EvalException(ctx);
         }
 
         if(!value.asBoolean()) {
-            throw new AssertionError(ctx.expression().toString());
+            throw new AssertionError("Failed Assertion "+ctx.expression().getText()+" line:"+ctx.start.getLine());
         }
 
         return TLValue.VOID;
@@ -326,7 +437,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
             return new TLValue(value.asList().size());
         }
 
-        throw new RuntimeException("Illegal function call: size("+ value +")");
+        throw new EvalException(ctx);
     }
 
     // ifStatement
@@ -366,4 +477,51 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
 
         return TLValue.VOID;
     }
+    
+    // block
+    // : (statement | functionDecl)* (Return expression Newline)?
+    // ;
+    @Override
+    public TLValue visitBlock(BlockContext ctx) {
+        for (StatementContext sx: ctx.statement()) {
+            this.visit(sx);
+        }
+        ExpressionContext ex;
+        if ((ex = ctx.expression()) != null) {
+            return this.visit(ex);
+        }
+        return TLValue.VOID;
+    }
+    
+    // forStatement
+    // : For Identifier '=' expression To expression OBrace block CBrace
+    // ;
+    @Override
+    public TLValue visitForStatement(ForStatementContext ctx) {
+        int start = this.visit(ctx.expression(0)).asDouble().intValue();
+        int stop = this.visit(ctx.expression(1)).asDouble().intValue();
+        for(int i = start; i <= stop; i++) {
+            scope.assign(ctx.Identifier().getText(), new TLValue(i));
+            TLValue returnValue = this.visit(ctx.block());
+            if(returnValue != TLValue.VOID) {
+                return returnValue;
+            }
+        }
+        return TLValue.VOID;
+    }
+    
+    // whileStatement
+    // : While expression OBrace block CBrace
+    // ;
+    @Override
+    public TLValue visitWhileStatement(WhileStatementContext ctx) {
+        while( this.visit(ctx.expression()).asBoolean() ) {
+            TLValue returnValue = this.visit(ctx.block());
+            if (returnValue != TLValue.VOID) {
+                return returnValue;
+            }
+        }
+        return TLValue.VOID;
+    }
+    
 }
