@@ -1,11 +1,18 @@
 package tl.antlr4;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.NotNull;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import tl.antlr4.TLParser.AndExpressionContext;
 import tl.antlr4.TLParser.AssertFunctionCallContext;
@@ -20,6 +27,7 @@ import tl.antlr4.TLParser.GtEqExpressionContext;
 import tl.antlr4.TLParser.GtExpressionContext;
 import tl.antlr4.TLParser.IdentifierFunctionCallContext;
 import tl.antlr4.TLParser.InExpressionContext;
+import tl.antlr4.TLParser.InputExpressionContext;
 import tl.antlr4.TLParser.ListContext;
 import tl.antlr4.TLParser.ListExpressionContext;
 import tl.antlr4.TLParser.LtEqExpressionContext;
@@ -446,7 +454,22 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     }
 
     // Input '(' String? ')'                    #inputExpression
-    // TODO
+    @Override
+    public TLValue visitInputExpression(InputExpressionContext ctx) {
+    	TerminalNode inputString = ctx.String();
+		try {
+			if (inputString != null) {
+				String text = inputString.getText();
+		        text = text.substring(1, text.length() - 1).replaceAll("\\\\(.)", "$1");
+				return new TLValue(new String(Files.readAllBytes(Paths.get(text))));
+			} else {
+				BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
+				return new TLValue(buffer.readLine());
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+    }
 
     
     // assignment
