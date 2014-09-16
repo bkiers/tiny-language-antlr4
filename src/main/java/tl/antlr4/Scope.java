@@ -17,7 +17,11 @@ public class Scope {
         parent = p;
         variables = new HashMap<String, TLValue>();
     }
-
+    
+    public void assignParam(String var, TLValue value) {
+    	variables.put(var, value);
+    }
+    
     public void assign(String var, TLValue value) {
         if(resolve(var) != null) {
             // There is already such a variable, re-assign it

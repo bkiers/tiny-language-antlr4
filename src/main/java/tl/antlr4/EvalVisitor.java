@@ -473,7 +473,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         String id = ctx.Identifier().getText() + params.size();
         Function function;      
         if ((function = functions.get(id)) != null) {
-            return function.invoke(params, functions, scope.copy());
+            return function.invoke(params, functions, scope);
         }
         throw new EvalException(ctx);
     }
@@ -563,11 +563,12 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     }
     
     // block
-    // : (statement | functionDecl)* (Return expression Newline)?
+    // : (statement | functionDecl)* (Return expression)?
     // ;
     @Override
     public TLValue visitBlock(BlockContext ctx) {
-        scope = new Scope(scope); // create new local scope
+    		
+    	scope = new Scope(scope); // create new local scope
         for (StatementContext sx: ctx.statement()) {
             this.visit(sx);
         }
