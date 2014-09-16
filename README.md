@@ -202,7 +202,7 @@ mvn -q antlr4:antlr4 install exec:java
 which should print:
 
 ```
-10.0 + 32.0 == 42.0
+All Assertions have passed.
 ```
 
 ## No Maven?

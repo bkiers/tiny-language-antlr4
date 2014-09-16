@@ -146,3 +146,4 @@ assert(n[0][2] == 0);
 assert(n[1][1] == n[2][2]);
 assert(p[2]);
 assert(p[1][2] == 'c');
+println("All Assertions have passed.");
