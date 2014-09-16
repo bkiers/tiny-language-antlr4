@@ -5,12 +5,12 @@ parse
  ;
 
 block
- : (statement | functionDecl)* (Return expression)?
+ : (statement | functionDecl)* (Return expression ';')?
  ;
 
 statement
- : assignment
- | functionCall
+ : assignment ';'
+ | functionCall ';'
  | ifStatement
  | forStatement
  | whileStatement
@@ -23,39 +23,37 @@ assignment
 functionCall
  : Identifier '(' exprList? ')' #identifierFunctionCall
  | Println '(' expression? ')'  #printlnFunctionCall
- | Println expression           #printlnFunctionCall
  | Print '(' expression ')'     #printFunctionCall
- | Print expression             #printFunctionCall
  | Assert '(' expression ')'    #assertFunctionCall
  | Size '(' expression ')'      #sizeFunctionCall
  ;
 
 ifStatement
- : ifStat elseIfStat* elseStat?
+ : ifStat elseIfStat* elseStat? End
  ;
 
 ifStat
- : If expression OBrace block CBrace
+ : If expression Do block
  ;
 
 elseIfStat
- : Else If expression OBrace block CBrace
+ : Else If expression Do block
  ;
 
 elseStat
- : Else OBrace block CBrace
+ : Else Do block
  ;
 
 functionDecl
- : Def Identifier '(' idList? ')' OBrace block CBrace
+ : Def Identifier '(' idList? ')' block End
  ;
 
 forStatement
- : For Identifier '=' expression To expression OBrace block CBrace
+ : For Identifier '=' expression To expression Do block End
  ;
 
 whileStatement
- : While expression OBrace block CBrace
+ : While expression Do block End
  ;
 
 idList
@@ -116,6 +114,8 @@ Return   : 'return';
 For      : 'for';
 While    : 'while';
 To       : 'to';
+Do       : 'do';
+End      : 'end';
 In       : 'in';
 Null     : 'null';
 
@@ -145,7 +145,6 @@ Assign   : '=';
 Comma    : ',';
 QMark    : '?';
 Colon    : ':';
-
 
 Bool
  : 'true' 
@@ -181,6 +180,3 @@ fragment Int
 fragment Digit 
  : [0-9]
  ;
-
-fragment Newline  : '\r'? '\n'; 
- 
