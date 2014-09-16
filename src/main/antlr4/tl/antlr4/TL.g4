@@ -5,16 +5,15 @@ parse
  ;
 
 block
- : (statement | functionDecl)* (Return expression Newline)?
+ : (statement | functionDecl)* (Return expression)?
  ;
 
 statement
- : assignment Newline
- | functionCall Newline
+ : assignment
+ | functionCall
  | ifStatement
  | forStatement
  | whileStatement
- | Newline
  ;
 
 assignment
@@ -24,7 +23,9 @@ assignment
 functionCall
  : Identifier '(' exprList? ')' #identifierFunctionCall
  | Println '(' expression? ')'  #printlnFunctionCall
+ | Println expression           #printlnFunctionCall
  | Print '(' expression ')'     #printFunctionCall
+ | Print expression             #printFunctionCall
  | Assert '(' expression ')'    #assertFunctionCall
  | Size '(' expression ')'      #sizeFunctionCall
  ;
@@ -144,7 +145,7 @@ Assign   : '=';
 Comma    : ',';
 QMark    : '?';
 Colon    : ':';
-Newline  : '\r'? '\n';
+
 
 Bool
  : 'true' 
@@ -180,5 +181,6 @@ fragment Int
 fragment Digit 
  : [0-9]
  ;
- 
+
+fragment Newline  : '\r'? '\n'; 
  

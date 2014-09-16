@@ -567,15 +567,17 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     // ;
     @Override
     public TLValue visitBlock(BlockContext ctx) {
+        scope = new Scope(scope); // create new local scope
         for (StatementContext sx: ctx.statement()) {
             this.visit(sx);
         }
         ExpressionContext ex;
         if ((ex = ctx.expression()) != null) {
-            //return this.visit(ex);
         	returnValue.value = this.visit(ex);
+        	scope = scope.parent();
         	throw returnValue;
         }
+        scope = scope.parent();
         return TLValue.VOID;
     }
     

@@ -36,6 +36,7 @@ public class Scope {
         // other "recursive scopes".
         Scope s = new Scope();
         s.variables = new HashMap<String, TLValue>(this.variables);
+        s.parent = this.parent;
         return s;
     }
 
