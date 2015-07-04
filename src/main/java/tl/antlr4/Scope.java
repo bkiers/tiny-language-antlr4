@@ -17,7 +17,11 @@ public class Scope {
         parent = p;
         variables = new HashMap<String, TLValue>();
     }
-
+    
+    public void assignParam(String var, TLValue value) {
+    	variables.put(var, value);
+    }
+    
     public void assign(String var, TLValue value) {
         if(resolve(var) != null) {
             // There is already such a variable, re-assign it
@@ -36,6 +40,7 @@ public class Scope {
         // other "recursive scopes".
         Scope s = new Scope();
         s.variables = new HashMap<String, TLValue>(this.variables);
+        s.parent = this.parent;
         return s;
     }
 
@@ -73,5 +78,14 @@ public class Scope {
             // Unknown variable
             return null;
         }
+    }
+    
+    @Override
+    public String toString() {
+    	StringBuilder sb = new StringBuilder();
+    	for(Map.Entry<String,TLValue> var: variables.entrySet()) {
+    		sb.append(var.getKey()+"->"+var.getValue()+",");
+    	}
+    	return sb.toString();
     }
 }

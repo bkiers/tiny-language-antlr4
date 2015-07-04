@@ -46,7 +46,7 @@ public class TLValue implements Comparable<TLValue> {
         return (String)value;
     }
 
-    @Override
+    //@Override
     public int compareTo(TLValue that) {
         if(this.isNumber() && that.isNumber()) {
             if(this.equals(that)) {
