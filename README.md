@@ -1,4 +1,4 @@
-#Tiny Language for ANTLR 4
+# Tiny Language for ANTLR 4
 
 In [some blog posts](http://web.archive.org/web/20140519034030/http://bkiers.blogspot.nl/2011/03/creating-your-own-programming-language.html)
 I wrote a while ago, I demonstrated how to create a small dynamically typed programming language
