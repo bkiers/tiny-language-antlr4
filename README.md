@@ -82,7 +82,7 @@ assert(a == (1+2+3+4+5+6+7+8+9+10));
 
 b = -10;
 c = 0;
-while b < 0 do 
+while b < 0 do
   c = c + b;
   b = b + 1;
 end
@@ -112,16 +112,16 @@ end
 
 // functions
 def twice(n)
-  temp = n + n; 
-  return temp; 
+  temp = n + n;
+  return temp;
 end
 
-def squared(n) 
-  return n*n; 
+def squared(n)
+  return n*n;
 end
 
-def squaredAndTwice(n) 
-  return twice(squared(n)); 
+def squaredAndTwice(n)
+  return twice(squared(n));
 end
 
 def list()
@@ -212,7 +212,7 @@ Download ANTLR 4:
 wget http://www.antlr.org/download/antlr-4.1-complete.jar
 ```
 
-Generate the lexer, parser and visitor classes and move them to the other 
+Generate the lexer, parser and visitor classes and move them to the other
 `.java` project sources:
 
 ```bash
@@ -220,7 +220,7 @@ java -cp antlr-4.1-complete.jar \
   org.antlr.v4.Tool src/main/antlr4/tl/antlr4/TL.g4 \
   -package tl.antlr4 \
   -visitor
-  
+
 mv src/main/antlr4/tl/antlr4/*.java src/main/java/tl/antlr4
 ```
 
@@ -235,3 +235,7 @@ Run the `Main` class:
 ```bash
 java -cp src/main/java:antlr-4.1-complete.jar tl.antlr4.Main
 ```
+
+## License
+
+[The MIT License](https://opensource.org/licenses/MIT)
