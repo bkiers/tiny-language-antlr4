@@ -238,4 +238,4 @@ java -cp src/main/java:antlr-4.1-complete.jar tl.antlr4.Main
 
 ## (Un)license
 
-[The Unlicense](hhttp://unlicense.org)
+[The Unlicense](http://unlicense.org)
