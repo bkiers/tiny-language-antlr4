@@ -236,6 +236,6 @@ Run the `Main` class:
 java -cp src/main/java:antlr-4.1-complete.jar tl.antlr4.Main
 ```
 
-## License
+## (Un)license
 
-[The MIT License](https://opensource.org/licenses/MIT)
+[The Unlicense](hhttp://unlicense.org)
