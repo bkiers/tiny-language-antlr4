@@ -8,14 +8,14 @@ public class Scope {
     private Scope parent;
     private Map<String, TLValue> variables;
 
-    public Scope() {
+    Scope() {
         // only for the global scope, the parent is null
         this(null);
     }
 
-    public Scope(Scope p) {
+    Scope(Scope p) {
         parent = p;
-        variables = new HashMap<String, TLValue>();
+        variables = new HashMap<>();
     }
     
     public void assignParam(String var, TLValue value) {
@@ -33,18 +33,7 @@ public class Scope {
         }
     }
 
-    public Scope copy() {
-        // Create a shallow copy of this scope. Used in case functions are
-        // are recursively called. If we wouldn't create a copy in such cases,
-        // changing the variables would result in changes ro the Maps from
-        // other "recursive scopes".
-        Scope s = new Scope();
-        s.variables = new HashMap<String, TLValue>(this.variables);
-        s.parent = this.parent;
-        return s;
-    }
-
-    public boolean isGlobalScope() {
+    private boolean isGlobalScope() {
         return parent == null;
     }
 
@@ -84,7 +73,7 @@ public class Scope {
     public String toString() {
     	StringBuilder sb = new StringBuilder();
     	for(Map.Entry<String,TLValue> var: variables.entrySet()) {
-    		sb.append(var.getKey()+"->"+var.getValue()+",");
+    		sb.append(var.getKey()).append("->").append(var.getValue()).append(",");
     	}
     	return sb.toString();
     }

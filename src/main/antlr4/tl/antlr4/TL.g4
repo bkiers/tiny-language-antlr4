@@ -5,7 +5,7 @@ parse
  ;
 
 block
- : (statement | functionDecl)* (Return expression ';')?
+ : ( statement | functionDecl )* ( Return expression ';' )?
  ;
 
 statement
@@ -57,41 +57,34 @@ whileStatement
  ;
 
 idList
- : Identifier (',' Identifier)*
+ : Identifier ( ',' Identifier )*
  ;
 
 exprList
- : expression (',' expression)*
+ : expression ( ',' expression )*
  ;
 
 expression
- : '-' expression                           #unaryMinusExpression
- | '!' expression                           #notExpression
- | expression '^' expression                #powerExpression
- | expression '*' expression                #multiplyExpression
- | expression '/' expression                #divideExpression
- | expression '%' expression                #modulusExpression
- | expression '+' expression                #addExpression
- | expression '-' expression                #subtractExpression
- | expression '>=' expression               #gtEqExpression
- | expression '<=' expression               #ltEqExpression
- | expression '>' expression                #gtExpression
- | expression '<' expression                #ltExpression
- | expression '==' expression               #eqExpression
- | expression '!=' expression               #notEqExpression
- | expression '&&' expression               #andExpression
- | expression '||' expression               #orExpression
- | expression '?' expression ':' expression #ternaryExpression
- | expression In expression                 #inExpression
- | Number                                   #numberExpression
- | Bool                                     #boolExpression
- | Null                                     #nullExpression
- | functionCall indexes?                    #functionCallExpression
- | list indexes?                            #listExpression
- | Identifier indexes?                      #identifierExpression
- | String indexes?                          #stringExpression
- | '(' expression ')' indexes?              #expressionExpression
- | Input '(' String? ')'                    #inputExpression
+ : '-' expression                                       #unaryMinusExpression
+ | '!' expression                                       #notExpression
+ | <assoc=right> expression '^' expression              #powerExpression
+ | expression op=( '*' | '/' | '%' ) expression         #multExpression
+ | expression op=( '+' | '-' ) expression               #addExpression
+ | expression op=( '>=' | '<=' | '>' | '<' ) expression #compExpression
+ | expression op=( '==' | '!=' ) expression             #eqExpression
+ | expression '&&' expression                           #andExpression
+ | expression '||' expression                           #orExpression
+ | expression '?' expression ':' expression             #ternaryExpression
+ | expression In expression                             #inExpression
+ | Number                                               #numberExpression
+ | Bool                                                 #boolExpression
+ | Null                                                 #nullExpression
+ | functionCall indexes?                                #functionCallExpression
+ | list indexes?                                        #listExpression
+ | Identifier indexes?                                  #identifierExpression
+ | String indexes?                                      #stringExpression
+ | '(' expression ')' indexes?                          #expressionExpression
+ | Input '(' String? ')'                                #inputExpression
  ;
 
 list
@@ -99,7 +92,7 @@ list
  ;
 
 indexes
- : ('[' expression ']')+
+ : ( '[' expression ']' )+
  ;
 
 Println  : 'println';
@@ -152,7 +145,7 @@ Bool
  ;
 
 Number
- : Int ('.' Digit*)?
+ : Int ( '.' Digit* )?
  ;
 
 Identifier
@@ -160,12 +153,12 @@ Identifier
  ;
 
 String
- : ["] (~["\r\n] | '\\\\' | '\\"')* ["]
- | ['] (~['\r\n] | '\\\\' | '\\\'')* [']
+ : ["] ( ~["\r\n\\] | '\\' ~[\r\n] )* ["]
+ | ['] ( ~['\r\n\\] | '\\' ~[\r\n] )* [']
  ;
 
 Comment
- : ('//' ~[\r\n]* | '/*' .*? '*/') -> skip
+ : ( '//' ~[\r\n]* | '/*' .*? '*/' ) -> skip
  ;
 
 Space

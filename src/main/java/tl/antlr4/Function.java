@@ -9,12 +9,11 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import tl.antlr4.TLParser.ExpressionContext;
 
 public class Function {
-	private String id;
+
     private List<TerminalNode> params;
     private ParseTree block;
 
-    public Function(String id, List<TerminalNode> params, ParseTree block) {
-    	this.id = id;
+    Function(List<TerminalNode> params, ParseTree block) {
         this.params = params;
         this.block = block;
     }
