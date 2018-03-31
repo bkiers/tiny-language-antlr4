@@ -37,6 +37,8 @@ assert('ab'*3 == "ababab");
 // power
 assert(2^10 == 1024);
 assert(3^3 == 27);
+assert(4^3^2 == 262144); // power is right associative
+assert((4^3)^2 == 4096);
 
 // for- and while statements
 a = 0;
@@ -96,7 +98,7 @@ end
 assert(squared(666) == 666^2);
 assert(twice(squared(5)) == 50);
 assert(squaredAndTwice(10) == 200);
-assert(squared(squared(squared(2))) == 2^2^2^2);
+assert(squared(squared(squared(2))) == ((2^2)^2)^2);
 assert(list() == [7,8,9]);
 assert(size(list()) == 3);
 assert(list()[1] == 8);
@@ -146,4 +148,5 @@ assert(n[0][2] == 0);
 assert(n[1][1] == n[2][2]);
 assert(p[2]);
 assert(p[1][2] == 'c');
+
 println("All Assertions have passed.");

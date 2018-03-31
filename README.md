@@ -72,6 +72,8 @@ assert('ab'*3 == "ababab");
 // power
 assert(2^10 == 1024);
 assert(3^3 == 27);
+assert(4^3^2 == 262144); // power is right associative
+assert((4^3)^2 == 4096);
 
 // for- and while statements
 a = 0;
@@ -82,7 +84,7 @@ assert(a == (1+2+3+4+5+6+7+8+9+10));
 
 b = -10;
 c = 0;
-while b < 0 do
+while b < 0 do 
   c = c + b;
   b = b + 1;
 end
@@ -112,16 +114,16 @@ end
 
 // functions
 def twice(n)
-  temp = n + n;
-  return temp;
+  temp = n + n; 
+  return temp; 
 end
 
-def squared(n)
-  return n*n;
+def squared(n) 
+  return n*n; 
 end
 
-def squaredAndTwice(n)
-  return twice(squared(n));
+def squaredAndTwice(n) 
+  return twice(squared(n)); 
 end
 
 def list()
@@ -131,7 +133,7 @@ end
 assert(squared(666) == 666^2);
 assert(twice(squared(5)) == 50);
 assert(squaredAndTwice(10) == 200);
-assert(squared(squared(squared(2))) == 2^2^2^2);
+assert(squared(squared(squared(2))) == ((2^2)^2)^2);
 assert(list() == [7,8,9]);
 assert(size(list()) == 3);
 assert(list()[1] == 8);
@@ -182,6 +184,7 @@ assert(n[1][1] == n[2][2]);
 assert(p[2]);
 assert(p[1][2] == 'c');
 
+println("All Assertions have passed.");
 ```
 
 ```bash
@@ -209,14 +212,14 @@ root folder of the project `tiny-language-antlr4`):
 Download ANTLR 4:
 
 ```bash
-wget http://www.antlr.org/download/antlr-4.1-complete.jar
+wget http://www.antlr.org/download/antlr-4.7.1-complete.jar
 ```
 
 Generate the lexer, parser and visitor classes and move them to the other
 `.java` project sources:
 
 ```bash
-java -cp antlr-4.1-complete.jar \
+java -cp antlr-4.7.1-complete.jar \
   org.antlr.v4.Tool src/main/antlr4/tl/antlr4/TL.g4 \
   -package tl.antlr4 \
   -visitor
@@ -227,13 +230,13 @@ mv src/main/antlr4/tl/antlr4/*.java src/main/java/tl/antlr4
 Compile all `.java` source files:
 
 ```bash
-javac -cp antlr-4.1-complete.jar src/main/java/tl/antlr4/*.java
+javac -cp antlr-4.7.1-complete.jar src/main/java/tl/antlr4/*.java
 ```
 
 Run the `Main` class:
 
 ```bash
-java -cp src/main/java:antlr-4.1-complete.jar tl.antlr4.Main
+java -cp src/main/java:antlr-4.7.1-complete.jar tl.antlr4.Main
 ```
 
 ## (Un)license
