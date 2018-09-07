@@ -205,6 +205,14 @@ All Assertions have passed.
 
 ## No Maven?
 
+### Maven Wrapper
+
+```
+./mvnw -q antlr4:antlr4 install exec:java
+```
+
+### ANTLR
+
 If you're unfamiliar with Maven, and are reluctant to install it, here's how
 to perform all the steps from the (*nix) command line (assuming you're in the
 root folder of the project `tiny-language-antlr4`):
