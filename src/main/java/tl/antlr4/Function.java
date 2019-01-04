@@ -22,15 +22,18 @@ public class Function {
         if (params.size() != this.params.size()) {
             throw new RuntimeException("Illegal Function call");
         }
-        scope = new Scope(scope); // create function scope
+        Scope scopeNext = new Scope(null); // create function scope
+
         EvalVisitor evalVisitor = new EvalVisitor(scope, functions); 
         for (int i = 0; i < this.params.size(); i++) {
             TLValue value = evalVisitor.visit(params.get(i));
-            scope.assignParam(this.params.get(i).getText(), value);
+            scopeNext.assignParam(this.params.get(i).getText(), value);
         }
+        EvalVisitor evalVistorNext = new EvalVisitor(scopeNext,functions);
+        
         TLValue ret = TLValue.VOID;
         try {
-        	evalVisitor.visit(this.block);
+        	evalVistorNext.visit(this.block);
         } catch (ReturnValue returnValue) {
         	ret = returnValue.value;
         }
