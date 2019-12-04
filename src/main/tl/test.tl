@@ -27,6 +27,7 @@ assert([1,2,3,4,5] - 4 == [1,2,3,5]);
 
 // multiply
 assert(3 * 50 == 150);
+println(3 * 50 == 150);
 assert(4 / 2 == 2);
 assert(1 / 4 == 0.25);
 assert(999999 % 3 == 0);
@@ -46,19 +47,26 @@ for i=1 to 10 do
   a = a + i;
 end
 assert(a == (1+2+3+4+5+6+7+8+9+10));
+println(a);
 
 b = -10;
 c = 0;
-while b < 0 do 
+while b < 0 do
   c = c + b;
   b = b + 1;
 end
 assert(c == -(1+2+3+4+5+6+7+8+9+10));
 
 // if
+println("a = 123;");
+println("   if a > 200 do");
+println("       assert(false);");
+println("println('Wrong');");
+
 a = 123;
 if a > 200 do
   assert(false);
+  println("Wrong");
 end
 
 if a < 100 do
@@ -67,6 +75,7 @@ else if a > 124 do
   assert(false);
 else if a < 124 do
   assert(true);
+  println("Correct");
 else do
   assert(false);
 end
@@ -79,16 +88,16 @@ end
 
 // functions
 def twice(n)
-  temp = n + n; 
-  return temp; 
+  temp = n + n;
+  return temp;
 end
 
-def squared(n) 
-  return n*n; 
+def squared(n)
+  return n*n;
 end
 
-def squaredAndTwice(n) 
-  return twice(squared(n)); 
+def squaredAndTwice(n)
+  return twice(squared(n));
 end
 
 def list()
@@ -149,4 +158,5 @@ assert(n[1][1] == n[2][2]);
 assert(p[2]);
 assert(p[1][2] == 'c');
 
+println(10+2);
 println("All Assertions have passed.");
