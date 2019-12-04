@@ -27,7 +27,7 @@ assert([1,2,3,4,5] - 4 == [1,2,3,5]);
 
 // multiply
 assert(3 * 50 == 150);
-println(3 * 50 == 150);
+println(3 * 50 == 150); //returns true
 assert(4 / 2 == 2);
 assert(1 / 4 == 0.25);
 assert(999999 % 3 == 0);
@@ -41,112 +41,6 @@ assert(3^3 == 27);
 assert(4^3^2 == 262144); // power is right associative
 assert((4^3)^2 == 4096);
 
-// for- and while statements
-a = 0;
-for i=1 to 10 do
-  a = a + i;
-end
-assert(a == (1+2+3+4+5+6+7+8+9+10));
-println(a);
-
-b = -10;
-c = 0;
-while b < 0 do
-  c = c + b;
-  b = b + 1;
-end
-assert(c == -(1+2+3+4+5+6+7+8+9+10));
-
-// if
-println("a = 123;");
-println("   if a > 200 do");
-println("       assert(false);");
-println("println('Wrong');");
-
-a = 123;
-if a > 200 do
-  assert(false);
-  println("Wrong");
-end
-
-if a < 100 do
-  assert(false);
-else if a > 124 do
-  assert(false);
-else if a < 124 do
-  assert(true);
-  println("Correct");
-else do
-  assert(false);
-end
-
-if false do
-  assert(false);
-else do
-  assert(true);
-end
-
-// functions
-def twice(n)
-  temp = n + n;
-  return temp;
-end
-
-def squared(n)
-  return n*n;
-end
-
-def squaredAndTwice(n)
-  return twice(squared(n));
-end
-
-def list()
-  return [7,8,9];
-end
-
-assert(squared(666) == 666^2);
-assert(twice(squared(5)) == 50);
-assert(squaredAndTwice(10) == 200);
-assert(squared(squared(squared(2))) == ((2^2)^2)^2);
-assert(list() == [7,8,9]);
-assert(size(list()) == 3);
-assert(list()[1] == 8);
-
-// naive bubble sort
-def sort(list)
-  while !sorted(list) do
-  end
-end
-def sorted(list)
-  n = size(list);
-  for i=0 to n-2 do
-    if list[i] > list[i+1] do
-      temp = list[i+1];
-      list[i+1] = list[i];
-      list[i] = temp;
-      return false;
-    end
-  end
-  return true;
-end
-numbers = [3,5,1,4,2];
-sort(numbers);
-assert(numbers == [1,2,3,4,5]);
-
-// resursive calls
-def fib(n)
-  if n < 2 do
-    return n;
-  else do
-    return fib(n-2) + fib(n-1);
-  end
-end
-sequence = [];
-for i = 0 to 10 do
-  sequence = sequence + fib(i);
-end
-assert(sequence == [0,1,1,2,3,5,8,13,21,34,55]);
-
 // lists and lookups, `in` operator
 n = [[1,0,0],[0,1,0],[0,0,1]];
 p = [-1, 'abc', true];
@@ -158,5 +52,4 @@ assert(n[1][1] == n[2][2]);
 assert(p[2]);
 assert(p[1][2] == 'c');
 
-println(10+2);
 println("All Assertions have passed.");

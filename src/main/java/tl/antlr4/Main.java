@@ -10,7 +10,9 @@ import org.antlr.v4.runtime.tree.ParseTree;
 public class Main {
     public static void main(String[] args) {
         try {
-            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test.tl"));
+//            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test.tl"));
+            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test2.tl"));
+//            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test3.tl"));
             TLParser parser = new TLParser(new CommonTokenStream(lexer));
             parser.setBuildParseTree(true);
             ParseTree tree = parser.parse();
