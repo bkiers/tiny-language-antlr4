@@ -24,6 +24,12 @@ assert(list() == [7,8,9]);
 assert(size(list()) == 3);
 assert(list()[1] == 8);
 
+println(squared(666));
+println(twice(squared(5)));
+println(list());
+println(size(list()));
+println(list()[1]);
+
 // naive bubble sort
 def sort(list)
   while !sorted(list) do
@@ -42,6 +48,8 @@ def sorted(list)
   return true;
 end
 numbers = [3,5,1,4,2];
+print("Unsorted Numbers Array: ");
+println(numbers);
 sort(numbers);
 assert(numbers == [1,2,3,4,5]);
 
@@ -62,6 +70,9 @@ def fib(n)
   end
 end
 sequence = [];
+print("Empty Sequence List before Recursion: ");
+println(sequence);
+
 for i = 0 to 10 do
   sequence = sequence + fib(i);
 end

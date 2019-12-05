@@ -18,22 +18,22 @@ public class Function {
         this.block = block;
     }
     
-    public TLValue invoke(List<ExpressionContext> params, Map<String, Function> functions, Scope scope) {
+    public TLValue invoke(List<ExpressionContext> params, Map<String, Function> func, Scope scope) {
         if (params.size() != this.params.size()) {
             throw new RuntimeException("Illegal Function call");
         }
-        Scope scopeNext = new Scope(null); // create function scope
+        Scope scopeNext = new Scope(null);
 
-        EvalVisitor evalVisitor = new EvalVisitor(scope, functions); 
+        EvalVisitor evalVisitor = new EvalVisitor(scope, func);
         for (int i = 0; i < this.params.size(); i++) {
             TLValue value = evalVisitor.visit(params.get(i));
             scopeNext.assignParam(this.params.get(i).getText(), value);
         }
-        EvalVisitor evalVistorNext = new EvalVisitor(scopeNext,functions);
+        EvalVisitor evalVisitorNext = new EvalVisitor(scopeNext,func);
         
         TLValue ret = TLValue.VOID;
         try {
-        	evalVistorNext.visit(this.block);
+        	evalVisitorNext.visit(this.block);
         } catch (ReturnValue returnValue) {
         	ret = returnValue.value;
         }

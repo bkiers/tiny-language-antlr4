@@ -9,7 +9,6 @@ public class Scope {
     private Map<String, TLValue> variables;
 
     Scope() {
-        // only for the global scope, the parent is null
         this(null);
     }
 
@@ -18,18 +17,16 @@ public class Scope {
         variables = new HashMap<>();
     }
     
-    public void assignParam(String var, TLValue value) {
-    	variables.put(var, value);
+    public void assignParam(String var, TLValue val) {
+    	variables.put(var, val);
     }
     
-    public void assign(String var, TLValue value) {
+    public void assign(String var, TLValue val) {
         if(resolve(var) != null) {
-            // There is already such a variable, re-assign it
-            this.reAssign(var, value);
+            this.reAssign(var, val);
         }
         else {
-            // A newly declared variable
-            variables.put(var, value);
+            variables.put(var, val);
         }
     }
 
@@ -41,30 +38,24 @@ public class Scope {
         return parent;
     }
 
-    private void reAssign(String identifier, TLValue value) {
+    private void reAssign(String identifier, TLValue val) {
         if(variables.containsKey(identifier)) {
-            // The variable is declared in this scope
-            variables.put(identifier, value);
+            variables.put(identifier, val);
         }
         else if(parent != null) {
-            // The variable was not declared in this scope, so let
-            // the parent scope re-assign it
-            parent.reAssign(identifier, value);
+            parent.reAssign(identifier, val);
         }
     }
 
     public TLValue resolve(String var) {
-        TLValue value = variables.get(var);
-        if(value != null) {
-            // The variable resides in this scope
-            return value;
+        TLValue val = variables.get(var);
+        if(val != null) {
+            return val;
         }
         else if(!isGlobalScope()) {
-            // Let the parent scope look for the variable
             return parent.resolve(var);
         }
         else {
-            // Unknown variable
             return null;
         }
     }

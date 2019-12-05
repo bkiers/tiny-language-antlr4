@@ -11,18 +11,18 @@ public class Main {
     public static void main(String[] args) {
         try {
 //            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test.tl"));
-            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test2.tl"));
-//            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test3.tl"));
+//            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test2.tl"));
+            TLLexer lexer = new TLLexer(CharStreams.fromFileName("src/main/tl/test3.tl"));
             TLParser parser = new TLParser(new CommonTokenStream(lexer));
             parser.setBuildParseTree(true);
-            ParseTree tree = parser.parse();
+            ParseTree parse_tree = parser.parse();
             
             Scope scope = new Scope();
-            Map<String, Function> functions = new HashMap<>();
-            SymbolVisitor symbolVisitor = new SymbolVisitor(functions);
-            symbolVisitor.visit(tree);
-            EvalVisitor visitor = new EvalVisitor(scope, functions);
-            visitor.visit(tree);
+            Map<String, Function> func = new HashMap<>();
+            SymbolVisitor symbolVisitor = new SymbolVisitor(func);
+            symbolVisitor.visit(parse_tree);
+            EvalVisitor visitor = new EvalVisitor(scope, func);
+            visitor.visit(parse_tree);
         } catch (Exception e) {
             if (e.getMessage() != null) {
                 System.err.println(e.getMessage());

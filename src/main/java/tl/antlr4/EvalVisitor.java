@@ -24,13 +24,12 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         this.functions = functions;
     }
 
-    // functionDecl
     @Override
     public TLValue visitFunctionDecl(FunctionDeclContext ctx) {
         return TLValue.VOID;
     }
     
-    // list: '[' exprList? ']'
+
     @Override
     public TLValue visitList(ListContext ctx) {
         List<TLValue> list = new ArrayList<>();
@@ -539,8 +538,8 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
 
     // Size '(' expression ')'      #sizeFunctionCall
     @Override
-    public TLValue visitSizeFunctionCall(SizeFunctionCallContext ctx) {
-    	TLValue value = this.visit(ctx.expression());
+    public TLValue visitSizeFunctionCall(SizeFunctionCallContext context) {
+    	TLValue value = this.visit(context.expression());
 
         if(value.isString()) {
             return new TLValue(value.asString().length());
@@ -550,42 +549,27 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
             return new TLValue(value.asList().size());
         }
 
-        throw new EvalException(ctx);
+        throw new EvalException(context);
     }
 
-    // ifStatement
-    //  : ifStat elseIfStat* elseStat? End
-    //  ;
-    //
-    // ifStat
-    //  : If expression Do block
-    //  ;
-    //
-    // elseIfStat
-    //  : Else If expression Do block
-    //  ;
-    //
-    // elseStat
-    //  : Else Do block
-    //  ;
     @Override
-    public TLValue visitIfStatement(IfStatementContext ctx) {
+    public TLValue visitIfStatement(IfStatementContext context) {
 
         // if ...
-        if(this.visit(ctx.ifStat().expression()).asBoolean()) {
-            return this.visit(ctx.ifStat().block());
+        if(this.visit(context.ifStat().expression()).asBoolean()) {
+            return this.visit(context.ifStat().block());
         }
 
         // else if ...
-        for(int i = 0; i < ctx.elseIfStat().size(); i++) {
-            if(this.visit(ctx.elseIfStat(i).expression()).asBoolean()) {
-                return this.visit(ctx.elseIfStat(i).block());
+        for(int i = 0; i < context.elseIfStat().size(); i++) {
+            if(this.visit(context.elseIfStat(i).expression()).asBoolean()) {
+                return this.visit(context.elseIfStat(i).block());
             }
         }
 
         // else ...
-        if(ctx.elseStat() != null) {
-            return this.visit(ctx.elseStat().block());
+        if(context.elseStat() != null) {
+            return this.visit(context.elseStat().block());
         }
 
         return TLValue.VOID;
@@ -595,14 +579,14 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     // : (statement | functionDecl)* (Return expression)?
     // ;
     @Override
-    public TLValue visitBlock(BlockContext ctx) {
+    public TLValue visitBlock(BlockContext context) {
     		
     	scope = new Scope(scope); // create new local scope
-        for (StatementContext sx: ctx.statement()) {
+        for (StatementContext sx: context.statement()) {
             this.visit(sx);
         }
         ExpressionContext ex;
-        if ((ex = ctx.expression()) != null) {
+        if ((ex = context.expression()) != null) {
         	returnValue.value = this.visit(ex);
         	scope = scope.parent();
         	throw returnValue;
@@ -615,12 +599,12 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     // : For Identifier '=' expression To expression OBrace block CBrace
     // ;
     @Override
-    public TLValue visitForStatement(ForStatementContext ctx) {
-        int start = this.visit(ctx.expression(0)).asDouble().intValue();
-        int stop = this.visit(ctx.expression(1)).asDouble().intValue();
+    public TLValue visitForStatement(ForStatementContext context) {
+        int start = this.visit(context.expression(0)).asDouble().intValue();
+        int stop = this.visit(context.expression(1)).asDouble().intValue();
         for(int i = start; i <= stop; i++) {
-            scope.assign(ctx.Identifier().getText(), new TLValue(i));
-            TLValue returnValue = this.visit(ctx.block());
+            scope.assign(context.Identifier().getText(), new TLValue(i));
+            TLValue returnValue = this.visit(context.block());
             if(returnValue != TLValue.VOID) {
                 return returnValue;
             }
@@ -632,9 +616,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     // : While expression OBrace block CBrace
     // ;
     @Override
-    public TLValue visitWhileStatement(WhileStatementContext ctx) {
-        while( this.visit(ctx.expression()).asBoolean() ) {
-            TLValue returnValue = this.visit(ctx.block());
+    public TLValue visitWhileStatement(WhileStatementContext context) {
+        while( this.visit(context.expression()).asBoolean() ) {
+            TLValue returnValue = this.visit(context.block());
             if (returnValue != TLValue.VOID) {
                 return returnValue;
             }

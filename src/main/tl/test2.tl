@@ -1,5 +1,6 @@
 // if
 a = 123;
+
 if a > 200 do
   assert(false);
 end
@@ -43,4 +44,4 @@ while b < 0 do
   b = b + 1;
 end
 assert(c == -(1+2+3+4+5+6+7+8+9+10));
-println(c); //returns -55
+println(c); //returns -55.0

@@ -14,14 +14,14 @@ public class TLValue implements Comparable<TLValue> {
         value = new Object();
     }
 
-    TLValue(Object v) {
-        if(v == null) {
+    TLValue(Object val) {
+        if(val == null) {
             throw new RuntimeException("v == null");
         }
-        value = v;
+        value = val;
         // only accept boolean, list, number or string types
         if(!(isBoolean() || isList() || isNumber() || isString())) {
-            throw new RuntimeException("invalid data type: " + v + " (" + v.getClass() + ")");
+            throw new RuntimeException("invalid data type: " + val + " (" + val.getClass() + ")");
         }
     }
 

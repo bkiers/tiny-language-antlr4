@@ -11,18 +11,18 @@ import tl.antlr4.TLParser.FunctionDeclContext;
 
 public class SymbolVisitor extends TLBaseVisitor<TLValue> {
 
-    private Map<String, Function> functions;
+    private Map<String, Function> functs;
     
     SymbolVisitor(Map<String, Function> functions) {
-        this.functions = functions;
+        this.functs = functions;
     }
     
     @Override
-    public TLValue visitFunctionDecl(FunctionDeclContext ctx) {
-        List<TerminalNode> params = ctx.idList() != null ? ctx.idList().Identifier() : new ArrayList<TerminalNode>(); 
-        ParseTree block = ctx.block();
-        String id = ctx.Identifier().getText() + params.size();
-        functions.put(id, new Function(params, block));
+    public TLValue visitFunctionDecl(FunctionDeclContext context) {
+        List<TerminalNode> params = context.idList() != null ? context.idList().Identifier() : new ArrayList<TerminalNode>();
+        ParseTree block = context.block();
+        String id = context.Identifier().getText() + params.size();
+        functs.put(id, new Function(params, block));
         return TLValue.VOID;
     }
 }
