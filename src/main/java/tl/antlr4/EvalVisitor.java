@@ -325,9 +325,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     public TLValue visitTernaryExpression(TernaryExpressionContext ctx) {
     	TLValue condition = this.visit(ctx.expression(0));
     	if (condition.asBoolean()) {
-    		return new TLValue(this.visit(ctx.expression(1)));
+    		return this.visit(ctx.expression(1));
     	} else {
-    		return new TLValue(this.visit(ctx.expression(2)));
+    		return this.visit(ctx.expression(2));
     	}
     }
 
