@@ -10,23 +10,24 @@ import tl.antlr4.TLParser.ExpressionContext;
 
 public class Function {
 
+    private Scope parentScope;
     private List<TerminalNode> params;
     private ParseTree block;
 
-    Function(List<TerminalNode> params, ParseTree block) {
+    Function(Scope parentScope, List<TerminalNode> params, ParseTree block) {
+        this.parentScope = parentScope;
         this.params = params;
         this.block = block;
     }
     
-    public TLValue invoke(List<ExpressionContext> params, Map<String, Function> functions, Scope scope) {
-        if (params.size() != this.params.size()) {
+    public TLValue invoke(List<TLValue> args, Map<String, Function> functions) {
+        if (args.size() != this.params.size()) {
             throw new RuntimeException("Illegal Function call");
         }
-        Scope scopeNext = new Scope(null); // create function scope
+        Scope scopeNext = new Scope(parentScope, true); // create function scope
 
-        EvalVisitor evalVisitor = new EvalVisitor(scope, functions); 
         for (int i = 0; i < this.params.size(); i++) {
-            TLValue value = evalVisitor.visit(params.get(i));
+            TLValue value = args.get(i);
             scopeNext.assignParam(this.params.get(i).getText(), value);
         }
         EvalVisitor evalVistorNext = new EvalVisitor(scopeNext,functions);

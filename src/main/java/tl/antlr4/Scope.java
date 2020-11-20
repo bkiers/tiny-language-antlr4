@@ -7,15 +7,17 @@ public class Scope {
 
     private Scope parent;
     private Map<String, TLValue> variables;
+    private boolean isFunction;
 
     Scope() {
         // only for the global scope, the parent is null
-        this(null);
+        this(null, false);
     }
 
-    Scope(Scope p) {
+    Scope(Scope p, boolean function) {
         parent = p;
         variables = new HashMap<>();
+        isFunction = function;
     }
     
     public void assignParam(String var, TLValue value) {
@@ -23,7 +25,7 @@ public class Scope {
     }
     
     public void assign(String var, TLValue value) {
-        if(resolve(var) != null) {
+        if(resolve(var, !isFunction) != null) {
             // There is already such a variable, re-assign it
             this.reAssign(var, value);
         }
@@ -54,14 +56,18 @@ public class Scope {
     }
 
     public TLValue resolve(String var) {
+        return resolve(var, true);
+    }
+
+    private TLValue resolve(String var, boolean checkParent) {
         TLValue value = variables.get(var);
         if(value != null) {
             // The variable resides in this scope
             return value;
         }
-        else if(!isGlobalScope()) {
+        else if(checkParent && !isGlobalScope()) {
             // Let the parent scope look for the variable
-            return parent.resolve(var);
+            return parent.resolve(var, !parent.isFunction);
         }
         else {
             // Unknown variable

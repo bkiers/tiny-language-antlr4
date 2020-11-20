@@ -1,6 +1,6 @@
 package tl.antlr4;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 import org.antlr.v4.runtime.CharStreams;
@@ -16,9 +16,7 @@ public class Main {
             ParseTree tree = parser.parse();
             
             Scope scope = new Scope();
-            Map<String, Function> functions = new HashMap<>();
-            SymbolVisitor symbolVisitor = new SymbolVisitor(functions);
-            symbolVisitor.visit(tree);
+            Map<String, Function> functions = Collections.emptyMap();
             EvalVisitor visitor = new EvalVisitor(scope, functions);
             visitor.visit(tree);
         } catch (Exception e) {
