@@ -6,10 +6,12 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import tl.antlr4.TLParser.*;
@@ -21,12 +23,17 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     
     EvalVisitor(Scope scope, Map<String, Function> functions) {
         this.scope = scope;
-        this.functions = functions;
+        this.functions = new HashMap<>(functions);
     }
 
     // functionDecl
     @Override
     public TLValue visitFunctionDecl(FunctionDeclContext ctx) {
+        List<TerminalNode> params = ctx.idList() != null ? ctx.idList().Identifier() : new ArrayList<TerminalNode>();
+        ParseTree block = ctx.block();
+        String id = ctx.Identifier().getText() + params.size();
+        // TODO: throw exception if function is already defined?
+        functions.put(id, new Function(scope, params, block));
         return TLValue.VOID;
     }
     
@@ -502,7 +509,11 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         String id = ctx.Identifier().getText() + params.size();
         Function function;      
         if ((function = functions.get(id)) != null) {
-            return function.invoke(params, functions, scope);
+            List<TLValue> args = new ArrayList<>(params.size());
+            for (ExpressionContext param: params) {
+                args.add(this.visit(param));
+            }
+            return function.invoke(args, functions);
         }
         throw new EvalException(ctx);
     }
@@ -597,7 +608,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     @Override
     public TLValue visitBlock(BlockContext ctx) {
     		
-    	scope = new Scope(scope); // create new local scope
+    	scope = new Scope(scope, false); // create new local scope
+        for (FunctionDeclContext fdx: ctx.functionDecl()) {
+            this.visit(fdx);
+        }
         for (StatementContext sx: ctx.statement()) {
             this.visit(sx);
         }

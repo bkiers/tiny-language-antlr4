@@ -124,7 +124,7 @@ numbers = [3,5,1,4,2];
 sort(numbers);
 assert(numbers == [1,2,3,4,5]);
 
-// resursive calls
+// recursive calls
 def fib(n)
   if n < 2 do
     return n;
@@ -132,11 +132,23 @@ def fib(n)
     return fib(n-2) + fib(n-1);
   end
 end
+assert(fib(4) == 3);
 sequence = [];
 for i = 0 to 10 do
   sequence = sequence + fib(i);
 end
 assert(sequence == [0,1,1,2,3,5,8,13,21,34,55]);
+
+def fib2(n)
+  if n < 2 do
+    return n;
+  else do
+    a = fib2(n-2);
+    c = fib2(n-1);
+    return a + c;
+  end
+end
+assert(fib2(4) == 3);
 
 // lists and lookups, `in` operator
 n = [[1,0,0],[0,1,0],[0,0,1]];
