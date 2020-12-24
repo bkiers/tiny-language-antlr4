@@ -521,7 +521,11 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     // Println '(' expression? ')'  #printlnFunctionCall
     @Override
     public TLValue visitPrintlnFunctionCall(PrintlnFunctionCallContext ctx) {
-        System.out.println(this.visit(ctx.expression()));
+        if (ctx.expression() != null) {
+            System.out.println(this.visit(ctx.expression()));
+        } else {
+            System.out.println();
+        }
         return TLValue.VOID;
     }
 
