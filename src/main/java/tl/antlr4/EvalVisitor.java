@@ -630,12 +630,16 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     }
     
     // forStatement
-    // : For Identifier '=' expression To expression OBrace block CBrace
+    // : For Identifier '=' expression To expression Do block End
+    // | For Identifier '=' expression Until expression Do block End
     // ;
     @Override
     public TLValue visitForStatement(ForStatementContext ctx) {
         int start = this.visit(ctx.expression(0)).asDouble().intValue();
         int stop = this.visit(ctx.expression(1)).asDouble().intValue();
+        if (ctx.Until() != null) {
+            stop -= 1;
+        }
         for(int i = start; i <= stop; i++) {
             scope.assign(ctx.Identifier().getText(), new TLValue(i));
             TLValue returnValue = this.visit(ctx.block());

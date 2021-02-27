@@ -50,6 +50,7 @@ functionDecl
 
 forStatement
  : For Identifier '=' expression To expression Do block End
+ | For Identifier '=' expression Until expression Do block End
  ;
 
 whileStatement
@@ -107,6 +108,7 @@ Return   : 'return';
 For      : 'for';
 While    : 'while';
 To       : 'to';
+Until    : 'until';
 Do       : 'do';
 End      : 'end';
 In       : 'in';
