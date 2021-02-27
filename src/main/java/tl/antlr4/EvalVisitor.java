@@ -57,6 +57,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	if (!v.isNumber()) {
     	    throw new EvalException(ctx);
         }
+        if (v.isInteger()) {
+            return new TLValue(-1 * v.asInt());
+        }
     	return new TLValue(-1 * v.asDouble());
     }
 
@@ -75,10 +78,21 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     public TLValue visitPowerExpression(PowerExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
+        if (lhs.isInteger() && rhs.isInteger()) {
+            return new TLValue(pow(lhs.asInt(), rhs.asInt()));
+        }
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(Math.pow(lhs.asDouble(), rhs.asDouble()));
     	}
     	throw new EvalException(ctx);
+    }
+
+    private static int pow(int a, int b) {
+        int result = 1;
+        for (int i = 1; i <= b; i++) {
+            result *= a;
+        }
+        return result;
     }
 
     // expression op=( '*' | '/' | '%' ) expression         #multExpression
@@ -147,25 +161,30 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	    throw new EvalException(ctx);
     	}
     	
+        // integer * integer
+        if(lhs.isInteger() && rhs.isInteger()) {
+            return new TLValue(lhs.asInt() * rhs.asInt());
+        }
+
     	// number * number
         if(lhs.isNumber() && rhs.isNumber()) {
             return new TLValue(lhs.asDouble() * rhs.asDouble());
         }
 
-        // string * number
-        if(lhs.isString() && rhs.isNumber()) {
+        // string * integer
+        if(lhs.isString() && rhs.isInteger()) {
             StringBuilder str = new StringBuilder();
-            int stop = rhs.asDouble().intValue();
+            int stop = rhs.asInt();
             for(int i = 0; i < stop; i++) {
                 str.append(lhs.asString());
             }
             return new TLValue(str.toString());
         }
 
-        // list * number
-        if(lhs.isList() && rhs.isNumber()) {
+        // list * integer
+        if(lhs.isList() && rhs.isInteger()) {
             List<TLValue> total = new ArrayList<>();
-            int stop = rhs.asDouble().intValue();
+            int stop = rhs.asInt();
             for(int i = 0; i < stop; i++) {
                 total.addAll(lhs.asList());
             }
@@ -187,6 +206,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
 	private TLValue modulus(MultExpressionContext ctx) {
 		TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
+        if (lhs.isInteger() && rhs.isInteger()) {
+            return new TLValue(lhs.asInt() % rhs.asInt());
+        }
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() % rhs.asDouble());
     	}
@@ -199,6 +221,11 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         
         if(lhs == null || rhs == null) {
             throw new EvalException(ctx);
+        }
+
+        // integer + integer
+        if(lhs.isInteger() && rhs.isInteger()) {
+            return new TLValue(lhs.asInt() + rhs.asInt());
         }
         
         // number + number
@@ -229,6 +256,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private TLValue subtract(AddExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
+        if (lhs.isInteger() && rhs.isInteger()) {
+            return new TLValue(lhs.asInt() - rhs.asInt());
+        }
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() - rhs.asDouble());
     	}
@@ -243,11 +273,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private TLValue gtEq(CompExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
-    	if (lhs.isNumber() && rhs.isNumber()) {
-    		return new TLValue(lhs.asDouble() >= rhs.asDouble());
-    	}
-    	if(lhs.isString() && rhs.isString()) {
-            return new TLValue(lhs.asString().compareTo(rhs.asString()) >= 0);
+        Integer result = lhs.compare(rhs);
+        if (result != null) {
+            return new TLValue(result >= 0);
         }
     	throw new EvalException(ctx);
     }
@@ -255,11 +283,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private TLValue ltEq(CompExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
-    	if (lhs.isNumber() && rhs.isNumber()) {
-    		return new TLValue(lhs.asDouble() <= rhs.asDouble());
-    	}
-    	if(lhs.isString() && rhs.isString()) {
-            return new TLValue(lhs.asString().compareTo(rhs.asString()) <= 0);
+        Integer result = lhs.compare(rhs);
+        if (result != null) {
+            return new TLValue(result <= 0);
         }
     	throw new EvalException(ctx);
     }
@@ -267,11 +293,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private TLValue gt(CompExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
-    	if (lhs.isNumber() && rhs.isNumber()) {
-    		return new TLValue(lhs.asDouble() > rhs.asDouble());
-    	}
-    	if(lhs.isString() && rhs.isString()) {
-            return new TLValue(lhs.asString().compareTo(rhs.asString()) > 0);
+        Integer result = lhs.compare(rhs);
+        if (result != null) {
+            return new TLValue(result > 0);
         }
     	throw new EvalException(ctx);
     }
@@ -279,11 +303,9 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private TLValue lt(CompExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
-    	if (lhs.isNumber() && rhs.isNumber()) {
-    		return new TLValue(lhs.asDouble() < rhs.asDouble());
-    	}
-    	if(lhs.isString() && rhs.isString()) {
-            return new TLValue(lhs.asString().compareTo(rhs.asString()) < 0);
+        Integer result = lhs.compare(rhs);
+        if (result != null) {
+            return new TLValue(result < 0);
         }
     	throw new EvalException(ctx);
     }
@@ -355,10 +377,16 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	throw new EvalException(ctx);
 	}
 	
-    // Number                                   #numberExpression
+    // Double                                   #doubleExpression
     @Override
-    public TLValue visitNumberExpression(NumberExpressionContext ctx) {
+    public TLValue visitDoubleExpression(DoubleExpressionContext ctx) {
         return new TLValue(Double.valueOf(ctx.getText()));
+    }
+
+    // Integer                                  #integerExpression
+    @Override
+    public TLValue visitIntegerExpression(IntegerExpressionContext ctx) {
+        return new TLValue(Integer.valueOf(ctx.getText()));
     }
 
     // Bool                                     #boolExpression
@@ -376,10 +404,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private TLValue resolveIndexes(TLValue val, List<ExpressionContext> indexes) {
     	for (ExpressionContext ec: indexes) {
     		TLValue idx = this.visit(ec);
-    		if (!idx.isNumber() || (!val.isList() && !val.isString()) ) {
+    		if (!idx.isInteger() || (!val.isList() && !val.isString()) ) {
         		throw new EvalException("Problem resolving indexes on "+val+" at "+idx, ec);
     		}
-    		int i = idx.asDouble().intValue();
+    		int i = idx.asInt();
     		if (val.isString()) {
     			val = new TLValue(val.asString().substring(i, i+1));
     		} else {
@@ -395,16 +423,16 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	}
     	for (int i = 0; i < indexes.size() - 1; i++) {
     		TLValue idx = this.visit(indexes.get(i));
-    		if (!idx.isNumber()) {
+    		if (!idx.isInteger()) {
         		throw new EvalException(ctx);
     		}
-    		val = val.asList().get(idx.asDouble().intValue());
+    		val = val.asList().get(idx.asInt());
     	}
     	TLValue idx = this.visit(indexes.get(indexes.size() - 1));
-		if (!idx.isNumber()) {
+		if (!idx.isInteger()) {
     		throw new EvalException(ctx);
 		}
-    	val.asList().set(idx.asDouble().intValue(), newVal);
+    	val.asList().set(idx.asInt(), newVal);
     }
     
     // functionCall indexes?                    #functionCallExpression
@@ -568,6 +596,36 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         throw new EvalException(ctx);
     }
 
+    // Round '(' expression ')'     #roundFunctionCall
+    @Override
+    public TLValue visitRoundFunctionCall(RoundFunctionCallContext ctx) {
+        TLValue value = this.visit(ctx.expression());
+        if(value.isNumber()) {
+            return new TLValue((int)Math.round(value.asDouble()));
+        }
+        throw new EvalException(ctx);
+    }
+
+    // Floor '(' expression ')'     #floorFunctionCall
+    @Override
+    public TLValue visitFloorFunctionCall(FloorFunctionCallContext ctx) {
+        TLValue value = this.visit(ctx.expression());
+        if(value.isNumber()) {
+            return new TLValue((int)Math.floor(value.asDouble()));
+        }
+        throw new EvalException(ctx);
+    }
+
+    // Ceil '(' expression ')'      #ceilFunctionCall
+    @Override
+    public TLValue visitCeilFunctionCall(CeilFunctionCallContext ctx) {
+        TLValue value = this.visit(ctx.expression());
+        if(value.isNumber()) {
+            return new TLValue((int)Math.ceil(value.asDouble()));
+        }
+        throw new EvalException(ctx);
+    }
+
     // ifStatement
     //  : ifStat elseIfStat* elseStat? End
     //  ;
@@ -634,8 +692,13 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     // ;
     @Override
     public TLValue visitForStatement(ForStatementContext ctx) {
-        int start = this.visit(ctx.expression(0)).asDouble().intValue();
-        int stop = this.visit(ctx.expression(1)).asDouble().intValue();
+        TLValue startValue = this.visit(ctx.expression(0));
+        TLValue stopValue = this.visit(ctx.expression(1));
+        if (!startValue.isInteger() || !stopValue.isInteger()) {
+            throw new EvalException(ctx);
+        }
+        int start = startValue.asInt();
+        int stop = stopValue.asInt();
         for(int i = start; i <= stop; i++) {
             scope.assign(ctx.Identifier().getText(), new TLValue(i));
             TLValue returnValue = this.visit(ctx.block());

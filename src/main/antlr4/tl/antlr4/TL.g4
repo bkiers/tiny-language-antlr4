@@ -26,6 +26,9 @@ functionCall
  | Print '(' expression ')'     #printFunctionCall
  | Assert '(' expression ')'    #assertFunctionCall
  | Size '(' expression ')'      #sizeFunctionCall
+ | Round '(' expression ')'     #roundFunctionCall
+ | Floor '(' expression ')'     #floorFunctionCall
+ | Ceil '(' expression ')'      #ceilFunctionCall
  ;
 
 ifStatement
@@ -76,7 +79,8 @@ expression
  | expression '||' expression                           #orExpression
  | expression '?' expression ':' expression             #ternaryExpression
  | expression In expression                             #inExpression
- | Number                                               #numberExpression
+ | Double                                               #doubleExpression
+ | Integer                                              #integerExpression
  | Bool                                                 #boolExpression
  | Null                                                 #nullExpression
  | functionCall indexes?                                #functionCallExpression
@@ -100,6 +104,9 @@ Print    : 'print';
 Input    : 'input';
 Assert   : 'assert';
 Size     : 'size';
+Round    : 'round';
+Floor    : 'floor';
+Ceil     : 'ceil';
 Def      : 'def';
 If       : 'if';
 Else     : 'else';
@@ -144,8 +151,12 @@ Bool
  | 'false'
  ;
 
-Number
- : Int ( '.' Digit* )?
+Double
+ : Int '.' Digit*
+ ;
+
+Integer
+ : Int
  ;
 
 Identifier
