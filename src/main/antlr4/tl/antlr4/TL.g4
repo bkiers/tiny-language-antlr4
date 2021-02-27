@@ -17,7 +17,7 @@ statement
  ;
 
 assignment
- : Identifier indexes? '=' expression
+ : Identifier indexes? op=( '=' | '^=' | '*=' | '/=' | '%=' | '+=' | '-=' | '&&=' | '||=' ) expression
  ;
 
 functionCall
@@ -138,6 +138,15 @@ Assign   : '=';
 Comma    : ',';
 QMark    : '?';
 Colon    : ':';
+
+OrAssign       : '||=';
+AndAssign      : '&&=';
+PowAssign      : '^=';
+AddAssign      : '+=';
+SubtractAssign : '-=';
+MultiplyAssign : '*=';
+DivideAssign   : '/=';
+ModulusAssign  : '%=';
 
 Bool
  : 'true' 
