@@ -17,7 +17,7 @@ statement
  ;
 
 assignment
- : Identifier indexes? '=' expression
+ : Identifier indexes? op=( '=' | '^=' | '*=' | '/=' | '%=' | '+=' | '-=' | '&&=' | '||=' ) expression
  ;
 
 functionCall
@@ -85,6 +85,7 @@ expression
  | String indexes?                                      #stringExpression
  | '(' expression ')' indexes?                          #expressionExpression
  | Input '(' String? ')'                                #inputExpression
+ | assignment                                           #assignmentExpression
  ;
 
 list
@@ -138,6 +139,15 @@ Assign   : '=';
 Comma    : ',';
 QMark    : '?';
 Colon    : ':';
+
+OrAssign       : '||=';
+AndAssign      : '&&=';
+PowAssign      : '^=';
+AddAssign      : '+=';
+SubtractAssign : '-=';
+MultiplyAssign : '*=';
+DivideAssign   : '/=';
+ModulusAssign  : '%=';
 
 Bool
  : 'true' 

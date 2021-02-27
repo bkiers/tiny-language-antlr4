@@ -40,6 +40,30 @@ assert(3^3 == 27);
 assert(4^3^2 == 262144); // power is right associative
 assert((4^3)^2 == 4096);
 
+// assignment
+a = 3;
+a += 1;
+assert(a == 4);
+a = 3;
+a -= 1;
+assert(a == 2);
+a = 3;
+a *= 2;
+assert(a == 6);
+a = 3;
+a /= 2;
+assert(a == 1.5);
+a = 3;
+a %= 2;
+assert(a == 1);
+a = 3;
+a ^= 3;
+assert(a == 27);
+
+assert((b = false) == false);
+assert((b ||= true) == true);
+assert((b &&= false) == false);
+
 // for- and while statements
 a = 0;
 for i=1 to 10 do

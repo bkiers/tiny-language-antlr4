@@ -75,6 +75,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     public TLValue visitPowerExpression(PowerExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
+        return pow(ctx, lhs, rhs);
+    }
+
+    private TLValue pow(ParserRuleContext ctx, TLValue lhs, TLValue rhs) {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(Math.pow(lhs.asDouble(), rhs.asDouble()));
     	}
@@ -142,6 +146,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     public TLValue multiply(MultExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
+        return multiply(ctx, lhs, rhs);
+    }
+
+    private TLValue multiply(ParserRuleContext ctx, TLValue lhs, TLValue rhs) {
     	if(lhs == null || rhs == null) {
     		System.err.println("lhs "+ lhs+ " rhs "+rhs);
     	    throw new EvalException(ctx);
@@ -178,6 +186,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private TLValue divide(MultExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
+    	return divide(ctx, lhs, rhs);
+    }
+
+    private TLValue divide(ParserRuleContext ctx, TLValue lhs, TLValue rhs) {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() / rhs.asDouble());
     	}
@@ -187,6 +199,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
 	private TLValue modulus(MultExpressionContext ctx) {
 		TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
+        return modulus(ctx, lhs, rhs);
+    }
+
+    private TLValue modulus(ParserRuleContext ctx, TLValue lhs, TLValue rhs) {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() % rhs.asDouble());
     	}
@@ -197,6 +213,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         TLValue lhs = this.visit(ctx.expression(0));
         TLValue rhs = this.visit(ctx.expression(1));
         
+        return add(ctx, lhs, rhs);
+    }
+
+    private TLValue add(ParserRuleContext ctx, TLValue lhs, TLValue rhs) {
         if(lhs == null || rhs == null) {
             throw new EvalException(ctx);
         }
@@ -229,6 +249,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private TLValue subtract(AddExpressionContext ctx) {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
+        return subtract(ctx, lhs, rhs);
+    }
+
+    private TLValue subtract(ParserRuleContext ctx, TLValue lhs, TLValue rhs) {
     	if (lhs.isNumber() && rhs.isNumber()) {
     		return new TLValue(lhs.asDouble() - rhs.asDouble());
     	}
@@ -309,6 +333,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
     	
+        return and(ctx, lhs, rhs);
+    }
+
+    private TLValue and(ParserRuleContext ctx, TLValue lhs, TLValue rhs) {
     	if(!lhs.isBoolean() || !rhs.isBoolean()) {
     	    throw new EvalException(ctx);
         }
@@ -321,6 +349,10 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     	TLValue lhs = this.visit(ctx.expression(0));
     	TLValue rhs = this.visit(ctx.expression(1));
     	
+        return or(ctx, lhs, rhs);
+    }
+
+    private TLValue or(ParserRuleContext ctx, TLValue lhs, TLValue rhs) {
     	if(!lhs.isBoolean() || !rhs.isBoolean()) {
     	    throw new EvalException(ctx);
         }
@@ -486,20 +518,46 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
 
     
     // assignment
-    // : Identifier indexes? '=' expression
+    // : Identifier indexes? op=( '=' | '^=' | '*=' | '/=' | '%=' | '+=' | '-=' | '&&=' | '||=' ) expression
     // ;
     @Override
     public TLValue visitAssignment(AssignmentContext ctx) {
-        TLValue newVal = this.visit(ctx.expression());
+        TLValue val = scope.resolve(ctx.Identifier().getText());
+        TLValue rhs = this.visit(ctx.expression());
+        TLValue newVal = this.newVal(ctx, val, rhs);
         if (ctx.indexes() != null) {
-        	TLValue val = scope.resolve(ctx.Identifier().getText());
         	List<ExpressionContext> exps = ctx.indexes().expression();
         	setAtIndex(ctx, exps, val, newVal);
         } else {
         	String id = ctx.Identifier().getText();        	
         	scope.assign(id, newVal);
         }
-        return TLValue.VOID;
+        return newVal;
+    }
+
+    private TLValue newVal(AssignmentContext ctx, TLValue val, TLValue rhs) {
+        switch (ctx.op.getType()) {
+            case TLLexer.Assign:
+                return rhs;
+            case TLLexer.OrAssign:
+                return or(ctx, val, rhs);
+            case TLLexer.AndAssign:
+                return and(ctx, val, rhs);
+            case TLLexer.PowAssign:
+                return pow(ctx, val, rhs);
+            case TLLexer.AddAssign:
+                return add(ctx, val, rhs);
+            case TLLexer.SubtractAssign:
+                return subtract(ctx, val, rhs);
+            case TLLexer.MultiplyAssign:
+                return multiply(ctx, val, rhs);
+            case TLLexer.DivideAssign:
+                return divide(ctx, val, rhs);
+            case TLLexer.ModulusAssign:
+                return modulus(ctx, val, rhs);
+            default:
+                throw new RuntimeException("unknown operator type: " + ctx.op.getType());
+        }
     }
 
     // Identifier '(' exprList? ')' #identifierFunctionCall
