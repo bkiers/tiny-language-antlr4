@@ -103,6 +103,13 @@ assert(list() == [7,8,9]);
 assert(size(list()) == 3);
 assert(list()[1] == 8);
 
+assert(round(4.4) == 4);
+assert(round(4.5) == 5);
+assert(floor(4.4) == 4);
+assert(floor(4.5) == 4);
+assert(ceil(4.4) == 5);
+assert(ceil(4.5) == 5);
+
 // naive bubble sort
 def sort(list)
   while !sorted(list) do

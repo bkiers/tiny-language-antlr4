@@ -596,6 +596,36 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         throw new EvalException(ctx);
     }
 
+    // Round '(' expression ')'     #roundFunctionCall
+    @Override
+    public TLValue visitRoundFunctionCall(RoundFunctionCallContext ctx) {
+        TLValue value = this.visit(ctx.expression());
+        if(value.isNumber()) {
+            return new TLValue((int)Math.round(value.asDouble()));
+        }
+        throw new EvalException(ctx);
+    }
+
+    // Floor '(' expression ')'     #floorFunctionCall
+    @Override
+    public TLValue visitFloorFunctionCall(FloorFunctionCallContext ctx) {
+        TLValue value = this.visit(ctx.expression());
+        if(value.isNumber()) {
+            return new TLValue((int)Math.floor(value.asDouble()));
+        }
+        throw new EvalException(ctx);
+    }
+
+    // Ceil '(' expression ')'      #ceilFunctionCall
+    @Override
+    public TLValue visitCeilFunctionCall(CeilFunctionCallContext ctx) {
+        TLValue value = this.visit(ctx.expression());
+        if(value.isNumber()) {
+            return new TLValue((int)Math.ceil(value.asDouble()));
+        }
+        throw new EvalException(ctx);
+    }
+
     // ifStatement
     //  : ifStat elseIfStat* elseStat? End
     //  ;

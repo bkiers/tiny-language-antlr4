@@ -26,6 +26,9 @@ functionCall
  | Print '(' expression ')'     #printFunctionCall
  | Assert '(' expression ')'    #assertFunctionCall
  | Size '(' expression ')'      #sizeFunctionCall
+ | Round '(' expression ')'     #roundFunctionCall
+ | Floor '(' expression ')'     #floorFunctionCall
+ | Ceil '(' expression ')'      #ceilFunctionCall
  ;
 
 ifStatement
@@ -101,6 +104,9 @@ Print    : 'print';
 Input    : 'input';
 Assert   : 'assert';
 Size     : 'size';
+Round    : 'round';
+Floor    : 'floor';
+Ceil     : 'ceil';
 Def      : 'def';
 If       : 'if';
 Else     : 'else';
