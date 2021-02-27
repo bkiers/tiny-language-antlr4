@@ -60,12 +60,9 @@ a = 3;
 a ^= 3;
 assert(a == 27);
 
-b = false;
-assert(b == false);
-b ||= true;
-assert(b == true);
-b &&= false;
-assert(b == false);
+assert((b = false) == false);
+assert((b ||= true) == true);
+assert((b &&= false) == false);
 
 // for- and while statements
 a = 0;

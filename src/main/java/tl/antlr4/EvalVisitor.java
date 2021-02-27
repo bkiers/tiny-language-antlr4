@@ -532,7 +532,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
         	String id = ctx.Identifier().getText();        	
         	scope.assign(id, newVal);
         }
-        return TLValue.VOID;
+        return newVal;
     }
 
     private TLValue newVal(AssignmentContext ctx, TLValue val, TLValue rhs) {

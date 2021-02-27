@@ -85,6 +85,7 @@ expression
  | String indexes?                                      #stringExpression
  | '(' expression ')' indexes?                          #expressionExpression
  | Input '(' String? ')'                                #inputExpression
+ | assignment                                           #assignmentExpression
  ;
 
 list
