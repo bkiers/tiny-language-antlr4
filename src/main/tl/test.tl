@@ -47,6 +47,12 @@ for i=1 to 10 do
 end
 assert(a == (1+2+3+4+5+6+7+8+9+10));
 
+a = 0;
+for i=1 until 10 do
+  a = a + i;
+end
+assert(a == (1+2+3+4+5+6+7+8+9));
+
 b = -10;
 c = 0;
 while b < 0 do 
