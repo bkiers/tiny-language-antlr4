@@ -14,27 +14,43 @@ public class TLValue implements Comparable<TLValue> {
         value = new Object();
     }
 
-    TLValue(Object v) {
+    private TLValue(Object v) {
         if(v == null) {
             throw new RuntimeException("v == null");
         }
         value = v;
-        // only accept boolean, list, number or string types
-        if(!(isBoolean() || isList() || isNumber() || isString())) {
-            throw new RuntimeException("invalid data type: " + v + " (" + v.getClass() + ")");
-        }
+    }
+
+    TLValue(Boolean v) {
+        this((Object)v);
+    }
+
+    TLValue(List<TLValue> v) {
+        this((Object)v);
+    }
+
+    TLValue(Integer v) {
+        this((Object)v);
+    }
+
+    TLValue(Double v) {
+        this((Object)v);
+    }
+
+    TLValue(String v) {
+        this((Object)v);
     }
 
     public Boolean asBoolean() {
         return (Boolean)value;
     }
 
-    public Double asDouble() {
+    public double asDouble() {
         return ((Number)value).doubleValue();
     }
 
-    public Long asLong() {
-        return ((Number)value).longValue();
+    public int asInt() {
+        return ((Number)value).intValue();
     }
 
     @SuppressWarnings("unchecked")
@@ -48,19 +64,35 @@ public class TLValue implements Comparable<TLValue> {
 
     @Override
     public int compareTo(TLValue that) {
+        Integer result = this.compare(that);
+        if (result != null) {
+            return result;
+        }
+        throw new RuntimeException("illegal expression: can't compare `" + this + "` to `" + that + "`");
+    }
+
+    Integer compare(TLValue that) {
+        if(this.isInteger() && that.isInteger()) {
+            if(this.asInt() == that.asInt()) {
+                return 0;
+            }
+            else {
+                return Integer.compare(this.asInt(), that.asInt());
+            }
+        }
         if(this.isNumber() && that.isNumber()) {
             if(this.equals(that)) {
                 return 0;
             }
             else {
-                return this.asDouble().compareTo(that.asDouble());
+                return Double.compare(this.asDouble(), that.asDouble());
             }
         }
         else if(this.isString() && that.isString()) {
             return this.asString().compareTo(that.asString());
         }
         else {
-            throw new RuntimeException("illegal expression: can't compare `" + this + "` to `" + that + "`");
+            return null;
         }
     }
 
@@ -76,6 +108,13 @@ public class TLValue implements Comparable<TLValue> {
             return false;
         }
         TLValue that = (TLValue)o;
+        return this.equals(that);
+    }
+
+    public boolean equals(TLValue that) {
+        if(this.isInteger() && that.isInteger()) {
+            return this.asInt() == that.asInt();
+        }
         if(this.isNumber() && that.isNumber()) {
             double diff = Math.abs(this.asDouble() - that.asDouble());
             return diff < 0.00000000001;
@@ -96,6 +135,10 @@ public class TLValue implements Comparable<TLValue> {
 
     public boolean isNumber() {
         return value instanceof Number;
+    }
+
+    public boolean isInteger() {
+        return value instanceof Integer;
     }
 
     public boolean isList() {

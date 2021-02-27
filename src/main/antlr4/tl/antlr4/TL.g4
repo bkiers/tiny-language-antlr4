@@ -76,7 +76,8 @@ expression
  | expression '||' expression                           #orExpression
  | expression '?' expression ':' expression             #ternaryExpression
  | expression In expression                             #inExpression
- | Number                                               #numberExpression
+ | Double                                               #doubleExpression
+ | Integer                                              #integerExpression
  | Bool                                                 #boolExpression
  | Null                                                 #nullExpression
  | functionCall indexes?                                #functionCallExpression
@@ -144,8 +145,12 @@ Bool
  | 'false'
  ;
 
-Number
- : Int ( '.' Digit* )?
+Double
+ : Int '.' Digit*
+ ;
+
+Integer
+ : Int
  ;
 
 Identifier
