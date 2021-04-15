@@ -21,7 +21,7 @@ public class EvalVisitor extends TLBaseVisitor<TLValue> {
     private Scope scope;
     private Map<String, Function> functions;
     
-    EvalVisitor(Scope scope, Map<String, Function> functions) {
+    public EvalVisitor(Scope scope, Map<String, Function> functions) {
         this.scope = scope;
         this.functions = new HashMap<>(functions);
     }
