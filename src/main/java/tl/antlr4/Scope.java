@@ -9,12 +9,12 @@ public class Scope {
     private Map<String, TLValue> variables;
     private boolean isFunction;
 
-    Scope() {
+    public Scope() {
         // only for the global scope, the parent is null
         this(null, false);
     }
 
-    Scope(Scope p, boolean function) {
+    public Scope(Scope p, boolean function) {
         parent = p;
         variables = new HashMap<>();
         isFunction = function;
